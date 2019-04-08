@@ -1,4 +1,6 @@
-# A simple Go client for the Bill.com API
+# A concurrent Go client for the Bill.com API
+
+**NB: Still under active development. Use at your own risk**
 
 ## Logging in to the Bill.com API v2
 To make queries to the Bill.com API you must first have an account (username + password), developer key, and organization ID. 
