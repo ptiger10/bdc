@@ -22,8 +22,6 @@ func handleMappingInput(input string) resourceType {
 	return resourceType(output)
 }
 
-func populateGeneric() {}
-
 // UpdateMappingFile updates the map of {resourceID: value} stored in the mappings/{resource}.json file
 // for all active resource items and creates that file if it doesn't exist.
 // Also returns inverted mappings for 2-way lookups.
@@ -70,6 +68,11 @@ func (c *Client) UpdateMappingFile(resource string) error {
 	}
 	for k, v := range mapping {
 		mappingInverted[v] = k
+	}
+
+	dir := "bdc_mappings"
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		os.Mkdir(dir, os.ModePerm)
 	}
 
 	err := writeToMappingFile(mapping, string(cleanedInput), false)
