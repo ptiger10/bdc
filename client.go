@@ -59,6 +59,20 @@ type baseResponse struct {
 	Data []map[string]interface{} `json:"response_data"`
 }
 
+type resourceType string
+
+// Resource type options
+const (
+	Locations    resourceType = "Locations"
+	Classes                   = "Classes"
+	Customers                 = "Customers"
+	Vendors                   = "Vendors"
+	Invoices                  = "Invoices"
+	Bills                     = "Bills"
+	BillPayments              = "BillPayments"
+	Payments                  = "Payments"
+)
+
 var client = new(Client)
 
 // GetClient returns an authenticated client. Will reuse the existing client if available.
