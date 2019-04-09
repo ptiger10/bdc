@@ -11,12 +11,8 @@ import (
 
 // CreateInvoicesFromCSV converts rows in a CSV into Bill.com invoices
 // File must match template in "csv_example.csv"
-func CreateInvoicesFromCSV(path string) error {
+func (c *Client) CreateInvoicesFromCSV(path string) error {
 
-	c, err := GetClient("credentials.json")
-	if err != nil {
-		return fmt.Errorf("Error creating client: %s", err)
-	}
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return fmt.Errorf("Unable to read file at %s: %s", path, err)
