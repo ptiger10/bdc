@@ -8,9 +8,9 @@ import (
 	"strconv"
 )
 
-// CreateInvoiceFromCSV converts rows in a CSV into Bill.com invoices
+// CreateInvoicesFromCSV converts rows in a CSV into Bill.com invoices
 // File must match template in "csv_example.csv"
-func CreateInvoiceFromCSV(path string) error {
+func CreateInvoicesFromCSV(path string) error {
 	c, err := GetClient("credentials.json")
 	if err != nil {
 		return fmt.Errorf("Error creating client: %s", err)
@@ -25,11 +25,26 @@ func CreateInvoiceFromCSV(path string) error {
 		return fmt.Errorf("Error parsing CSV at %s: %s", path, err)
 	}
 
-	// Looks for an empty InvoiceNumber to demarcate a new invoice
+	// Looks for an empty InvoiceNumber or a non-repeated invoice number to demarcate a new invoice
 	var invoiceStartLines []int
-	for lineNum, row := range records {
-		if row[1] != "InvoiceNumber" && row[1] != "" {
-			invoiceStartLines = append(invoiceStartLines, lineNum)
+	if len(records) == 0 {
+		invoiceStartLines = append(invoiceStartLines, 0)
+	} else {
+		for lineNum := 0; lineNum < len(records); lineNum++ {
+			row := records[lineNum]
+			var repeated bool
+			if lineNum+1 == len(records) {
+				priorRow := records[lineNum-1]
+				repeated = row[1] == priorRow[1]
+			} else {
+				nextRow := records[lineNum+1]
+				repeated = row[1] == nextRow[1]
+			}
+			header := row[1] == "InvoiceNumber"
+			empty := row[1] == ""
+			if !header && !empty && !repeated {
+				invoiceStartLines = append(invoiceStartLines, lineNum)
+			}
 		}
 	}
 

@@ -13,8 +13,8 @@ type mapping map[string]string
 
 const mappingsDir string = "bdc_mappings"
 
-var availableMappings = []resourceType{"Locations", "Classes", "Customers", "Vendors", "Items"}
-var invoiceMappings = []resourceType{"Locations", "Classes", "Customers"}
+var availableMappings = []resourceType{Locations, Classes, Customers, Vendors, Items, CustomerAccounts}
+var invoiceCreationMappings = []resourceType{Locations, Classes, Customers}
 
 func handleMappingInput(input string) resourceType {
 	output := strings.Title(input)
@@ -56,10 +56,10 @@ func getItemsMapping() (mapping, error) {
 	return m, nil
 }
 
-// returns inverted mappings for customers, locations, and classes
-func getInvoiceMappings() (map[resourceType]mapping, error) {
+// returns inverted mappings for customer name, locations, and classes
+func getInvoiceCreationMappings() (map[resourceType]mapping, error) {
 	masterMap := make(map[resourceType]mapping)
-	for _, resource := range invoiceMappings {
+	for _, resource := range invoiceCreationMappings {
 		m, err := getMapping(resource, true)
 		if err != nil {
 			return nil, fmt.Errorf("Unable to get inverted mappings for invoices: %v", err)
@@ -92,8 +92,8 @@ func (c *Client) updateMappingFile(resource string) error {
 	mappingInverted := make(map[string]string)
 	p := NewParameters()
 	p.AddFilter("isActive", "=", "1")
-	switch cleanedInput {
-	case Locations:
+	switch r := cleanedInput; {
+	case r == Locations:
 		resp, err := c.Location.All(p)
 		if err != nil {
 			return fmt.Errorf("Unable to get locations for mapping: %v", err)
@@ -101,7 +101,7 @@ func (c *Client) updateMappingFile(resource string) error {
 		for _, item := range resp {
 			mapping[item.ID] = item.Name
 		}
-	case Classes:
+	case r == Classes:
 		resp, err := c.Class.All(p)
 		if err != nil {
 			return fmt.Errorf("Unable to get classes for mapping: %v", err)
@@ -109,7 +109,7 @@ func (c *Client) updateMappingFile(resource string) error {
 		for _, item := range resp {
 			mapping[item.ID] = item.Name
 		}
-	case Customers:
+	case r == Customers:
 		resp, err := c.Customer.All()
 		if err != nil {
 			return fmt.Errorf("Unable to get customers for mapping: %v", err)
@@ -117,7 +117,7 @@ func (c *Client) updateMappingFile(resource string) error {
 		for _, item := range resp {
 			mapping[item.ID] = item.Name
 		}
-	case Vendors:
+	case r == Vendors:
 		resp, err := c.Vendor.All()
 		if err != nil {
 			return fmt.Errorf("Unable to get vendors for mapping: %v", err)
@@ -125,13 +125,21 @@ func (c *Client) updateMappingFile(resource string) error {
 		for _, item := range resp {
 			mapping[item.ID] = item.Name
 		}
-	case Items:
+	case r == Items:
 		resp, err := c.Item.All()
 		if err != nil {
 			return fmt.Errorf("Unable to get items for mapping: %v", err)
 		}
 		for _, item := range resp {
 			mapping[item.ID] = item.Name
+		}
+	case r == CustomerAccounts:
+		resp, err := c.Customer.All()
+		if err != nil {
+			return fmt.Errorf("Unable to get items for mapping: %v", err)
+		}
+		for _, item := range resp {
+			mapping[item.ID] = item.AccoutNumber
 		}
 	}
 	for k, v := range mapping {

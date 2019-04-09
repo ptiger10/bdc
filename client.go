@@ -65,15 +65,16 @@ type resourceType string
 
 // Resource type options
 const (
-	Locations    resourceType = "Locations"
-	Classes                   = "Classes"
-	Customers                 = "Customers"
-	Vendors                   = "Vendors"
-	Invoices                  = "Invoices"
-	Bills                     = "Bills"
-	BillPayments              = "BillPayments"
-	Payments                  = "Payments"
-	Items                     = "Items"
+	Locations        resourceType = "Locations"
+	Classes                       = "Classes"
+	Customers                     = "Customers"
+	Vendors                       = "Vendors"
+	Invoices                      = "Invoices"
+	Bills                         = "Bills"
+	BillPayments                  = "BillPayments"
+	Payments                      = "Payments"
+	Items                         = "Items"
+	CustomerAccounts              = "CustomerAccounts"
 )
 
 var client = new(Client)
