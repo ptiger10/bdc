@@ -3,10 +3,18 @@ package bdc
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"reflect"
 )
 
-type invoiceResponse struct {
+// Slice of invoices
+type invoiceRespList struct {
 	Data []Invoice `json:"response_data"`
+}
+
+// Single invoice
+type invoiceResp struct {
+	Data Invoice `json:"response_data"`
 }
 
 // Invoice in Bill.com
@@ -54,7 +62,7 @@ func (r invoiceResource) All(parameters ...*Parameters) ([]Invoice, error) {
 		if resp.err != nil {
 			errSlice = append(errSlice, fmt.Sprintf("Error on page %v: %v", resp.page, resp.err))
 		} else {
-			var goodResp invoiceResponse
+			var goodResp invoiceRespList
 			json.Unmarshal(resp.result, &goodResp)
 			retList = append(retList, goodResp.Data...)
 		}
@@ -64,10 +72,130 @@ func (r invoiceResource) All(parameters ...*Parameters) ([]Invoice, error) {
 	return retList, err
 }
 
+// Get returns a single Invoice object
+func (r invoiceResource) Get(id string) (Invoice, error) {
+	inv, err := r.client.getOne(r.suffix, id)
+	if err != nil {
+		return Invoice{}, fmt.Errorf("Unable to get invoice id %v: %v", id, err)
+	}
+	var goodResp invoiceResp
+	json.Unmarshal(inv, &goodResp)
+	return goodResp.Data, nil
+}
+
 // Create invoice
 func (r invoiceResource) Create(inv Invoice) error {
-	error := r.client.createEntity(r.suffix, inv)
-	return error
+
+	err := r.client.createEntity(r.suffix, inv)
+	if err == nil {
+		log.Printf("Created Invoice %+v\n", inv)
+	}
+	return err
+}
+
+// Update one invoice.
+// Supply an Invoice with just the updates you want; all other fields will be preserved.
+func (r invoiceResource) Update(updates Invoice) error {
+	if updates.ID == "" {
+		return fmt.Errorf("Must provide invoice ID to update")
+	}
+	oldInvoice, err := r.client.Invoice.Get(updates.ID)
+	if err != nil {
+		return fmt.Errorf("Unable to get invoice %v to run update: %v", updates.ID, err)
+	}
+	newInvoice := Invoice(oldInvoice)
+
+	valUpdates := reflect.ValueOf(updates)
+	for i := 0; i < valUpdates.NumField(); i++ {
+		fVal := valUpdates.Field(i)
+		fType := fVal.Type()
+		fName := valUpdates.Type().Field(i).Name
+
+		var isZero bool
+		switch fType.Kind() {
+		case reflect.Slice:
+			isZero = fVal.Len() == 0
+		default:
+			isZero = fVal.Interface() == reflect.Zero(fType).Interface()
+		}
+		if isZero {
+			continue
+		}
+
+		reflect.ValueOf(&newInvoice).Elem().FieldByName(fName).Set(fVal)
+	}
+	err = r.client.updateEntity(r.suffix, newInvoice)
+	if err == nil {
+		log.Printf("Updated Invoice %s with %+v\n", updates.ID, updates)
+	}
+	return err
+}
+
+// NewInvoiceLineItem returns a pointer to a new invoice line item
+// Only allows for 1 item per invoice line item
+func NewInvoiceLineItem(itemName string, amount float64, description string) (*InvoiceLineItem, error) {
+	maps, err := getItemsMapping()
+	if err != nil {
+		return nil, fmt.Errorf("Unable to get items mapping: %v", err)
+	}
+	item, ok := maps[itemName]
+	if !ok {
+		return nil, fmt.Errorf("Item %v not in mapping. Could not create invoice line item", itemName)
+	}
+	return &InvoiceLineItem{
+		Entity:      "InvoiceLineItem",
+		ItemID:      item,
+		Amount:      amount,
+		Quantity:    1,
+		Price:       amount,
+		Description: description,
+	}, nil
+}
+
+// NewInvoice returns a new invoice
+// Date must be provided as YYYY-MM-DD
+// InvoiceDate and DueDate are set to be equivalent
+func NewInvoice(customerName string, invoiceNumber string, dueDate string, className string, locationName string,
+	lineItems []*InvoiceLineItem) (Invoice, error) {
+	maps, err := getInvoiceCreationMappings()
+	if err != nil {
+		return Invoice{}, fmt.Errorf("Unable to get convenience mappings to create invoice: %v", err)
+	}
+	location, ok := maps[Locations][locationName]
+	if !ok {
+		return Invoice{}, fmt.Errorf("Location %v not in mapping. Could not create invoice", locationName)
+	}
+	class, ok := maps[Classes][className]
+	if !ok {
+		return Invoice{}, fmt.Errorf("Class %v not in mapping. Could not create invoice", className)
+	}
+	customer, ok := maps[Customers][customerName]
+	if !ok {
+		return Invoice{}, fmt.Errorf("Customer %v not in mapping. Could not create invoice", customerName)
+	}
+
+	var amount float64
+	var lineItemsCopy []InvoiceLineItem
+	for _, lineItem := range lineItems {
+		amount += lineItem.Amount
+		lineItem.LocationID = location
+		lineItem.ClassID = class
+		lineItemsCopy = append(lineItemsCopy, *lineItem) // dereference pointers individually
+	}
+
+	return Invoice{
+		Entity:        "Invoice",
+		CustomerID:    customer,
+		InvoiceNumber: invoiceNumber,
+		InvoiceDate:   dueDate,
+		DueDate:       dueDate,
+		Amount:        amount,
+		AmountDue:     amount, // upon invoice creation, equivalent to amount
+		ClassID:       class,
+		LocationID:    location,
+
+		LineItems: lineItemsCopy,
+	}, nil
 }
 
 // NewInvoiceLineItem returns a pointer to a new invoice line item
