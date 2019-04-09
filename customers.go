@@ -9,6 +9,10 @@ type customerResponse struct {
 	Data []Customer `json:"response_data"`
 }
 
+type customerResp struct {
+	Data Customer `json:"response_data"`
+}
+
 // Customer in Bill.com
 type Customer struct {
 	ID           string `json:"id"`
@@ -23,9 +27,20 @@ type customerResource struct {
 	resourceFields
 }
 
+// Get returns a single Customer object
+func (r customerResource) Get(id string) (Customer, error) {
+	cust, err := r.client.getOne(r.suffix, id)
+	if err != nil {
+		return Customer{}, fmt.Errorf("Unable to get customer id %v: %v", id, err)
+	}
+	var goodResp customerResp
+	json.Unmarshal(cust, &goodResp)
+	return goodResp.Data, nil
+}
+
 // All customers
 func (r customerResource) All(parameters ...*Parameters) ([]Customer, error) {
-	results := r.client.getAll(r.endpoint, parameters)
+	results := r.client.getAll(r.suffix, parameters)
 
 	var retList []Customer
 	var errSlice []string

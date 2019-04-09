@@ -25,7 +25,7 @@ type classResource struct {
 
 // All classes
 func (r classResource) All(parameters ...*Parameters) ([]Class, error) {
-	results := r.client.getAll(r.endpoint, parameters)
+	results := r.client.getAll(r.suffix, parameters)
 
 	var retList []Class
 	var errSlice []string

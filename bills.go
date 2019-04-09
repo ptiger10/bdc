@@ -37,7 +37,7 @@ type billResource struct {
 
 // All bills
 func (r billResource) All(parameters ...*Parameters) ([]Bill, error) {
-	results := r.client.getAll(r.endpoint, parameters)
+	results := r.client.getAll(r.suffix, parameters)
 
 	var retList []Bill
 	var errSlice []string

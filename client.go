@@ -12,14 +12,15 @@ const (
 )
 
 const (
-	customerEndpoint        = "Customer.json"
-	vendorEndpoint          = "Vendor.json"
-	invoiceEndpoint         = "Invoice.json"
-	billEndpoint            = "Bill.json"
-	paymentMadeEndpoint     = "BillPay.json"
-	paymentReceivedEndpoint = "ReceivedPay.json"
-	locationEndpoint        = "Location.json"
-	classEndpoint           = "ActgClass.json"
+	customerSuffix        = "Customer.json"
+	vendorSuffix          = "Vendor.json"
+	invoiceSuffix         = "Invoice.json"
+	billSuffix            = "Bill.json"
+	paymentMadeSuffix     = "BillPay.json"
+	paymentReceivedSuffix = "ReceivedPay.json"
+	locationSuffix        = "Location.json"
+	classSuffix           = "ActgClass.json"
+	itemSuffix            = "Item.json"
 )
 
 type credentials struct {
@@ -41,6 +42,7 @@ type Client struct {
 	PaymentReceived paymentReceivedResource
 	Location        locationResource
 	Class           classResource
+	Item            itemResource
 }
 
 type resultError struct {
@@ -51,8 +53,8 @@ type resultError struct {
 
 // Shared fields across all resources
 type resourceFields struct {
-	endpoint string
-	client   *Client
+	suffix string
+	client *Client
 }
 
 type baseResponse struct {
@@ -71,6 +73,7 @@ const (
 	Bills                     = "Bills"
 	BillPayments              = "BillPayments"
 	Payments                  = "Payments"
+	Items                     = "Items"
 )
 
 var client = new(Client)
@@ -87,13 +90,14 @@ func GetClient(path string) (*Client, error) {
 		client = &Client{sessionID: sid, devKey: creds.DevKey}
 	}
 
-	client.Customer = customerResource{resourceFields{endpoint: customerEndpoint, client: client}}
-	client.Vendor = vendorResource{resourceFields{endpoint: vendorEndpoint, client: client}}
-	client.Invoice = invoiceResource{resourceFields{endpoint: invoiceEndpoint, client: client}}
-	client.Bill = billResource{resourceFields{endpoint: billEndpoint, client: client}}
-	client.PaymentMade = paymentMadeResource{resourceFields{endpoint: paymentMadeEndpoint, client: client}}
-	client.PaymentReceived = paymentReceivedResource{resourceFields{endpoint: paymentReceivedEndpoint, client: client}}
-	client.Location = locationResource{resourceFields{endpoint: locationEndpoint, client: client}}
-	client.Class = classResource{resourceFields{endpoint: classEndpoint, client: client}}
+	client.Customer = customerResource{resourceFields{suffix: customerSuffix, client: client}}
+	client.Vendor = vendorResource{resourceFields{suffix: vendorSuffix, client: client}}
+	client.Invoice = invoiceResource{resourceFields{suffix: invoiceSuffix, client: client}}
+	client.Bill = billResource{resourceFields{suffix: billSuffix, client: client}}
+	client.PaymentMade = paymentMadeResource{resourceFields{suffix: paymentMadeSuffix, client: client}}
+	client.PaymentReceived = paymentReceivedResource{resourceFields{suffix: paymentReceivedSuffix, client: client}}
+	client.Location = locationResource{resourceFields{suffix: locationSuffix, client: client}}
+	client.Class = classResource{resourceFields{suffix: classSuffix, client: client}}
+	client.Item = itemResource{resourceFields{suffix: itemSuffix, client: client}}
 	return client, nil
 }

@@ -1,0 +1,2 @@
+Customer,InvoiceNumber,DueDate,Class,Location,Item,Amount,Description
+John Doe,doe-123,2019-01-01,Product1,Location1,Revenue,1.05,Product1 sales
