@@ -33,24 +33,33 @@ func encodeReadData(c *Client, start int, max int, filters, sorts []map[string]i
 	return body
 }
 
-// Get up to pageMax records from an endpoint starting at record number "start" with optional filters
-func (c *Client) getPage(start int, max int, endpoint string, filters, sorts []map[string]interface{}) resultError {
-	body := encodeReadData(c, start, max, filters, sorts)
+// make an HTTP request
+func makeRequest(endpoint string, body io.Reader) ([]byte, error) {
 	url := baseURL + endpoint
 	resp, err := http.Post(url, "application/x-www-form-urlencoded", body)
 	if err != nil {
-		return resultError{err: fmt.Errorf("Unable to send Post request to %s: %s", url, err)}
+		return nil, fmt.Errorf("Unable to send Post request to %s: %s", url, err)
 	}
 	defer resp.Body.Close()
 	r, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return resultError{err: fmt.Errorf("Unable to read resp body from %s: %s", url, err)}
+		return nil, fmt.Errorf("Unable to read resp body from %s: %s", url, err)
 	}
 	err = handleError(r, url)
 	if err != nil {
-		return resultError{err: fmt.Errorf("Unable to get data from page: %v", err)}
+		return nil, fmt.Errorf("Unable to get data from page: %v", err)
 	}
-	return resultError{result: r}
+	return r, nil
+}
+
+// Get up to pageMax records from an endpoint starting at record number "start" with optional filters
+func (c *Client) getPage(start int, max int, endpoint string, filters, sorts []map[string]interface{}) resultError {
+	body := encodeReadData(c, start, max, filters, sorts)
+	resp, err := makeRequest(endpoint, body)
+	if err != nil {
+		return resultError{err: err}
+	}
+	return resultError{result: resp}
 }
 
 // goroutine to check whether an item exists at a specific location,

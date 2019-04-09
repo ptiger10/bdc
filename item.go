@@ -5,12 +5,12 @@ import (
 	"fmt"
 )
 
-type locationResponse struct {
-	Data []Location `json:"response_data"`
+type itemResponse struct {
+	Data []Item `json:"response_data"`
 }
 
-// Location in Bill.com
-type Location struct {
+// Item in Bill.com
+type Item struct {
 	Entity      string `json:"entity"`
 	IsActive    string `json:"isActive"`
 	ID          string `json:"id"`
@@ -19,21 +19,21 @@ type Location struct {
 	Description string `json:"description"`
 }
 
-type locationResource struct {
+type itemResource struct {
 	resourceFields
 }
 
 // All locations
-func (r locationResource) All(parameters ...*Parameters) ([]Location, error) {
+func (r itemResource) All(parameters ...*Parameters) ([]Item, error) {
 	results := r.client.getAll(r.suffix, parameters)
 
-	var retList []Location
+	var retList []Item
 	var errSlice []string
 	for _, resp := range results {
 		if resp.err != nil {
 			errSlice = append(errSlice, fmt.Sprintf("Error on page %v: %v", resp.page, resp.err))
 		} else {
-			var goodResp locationResponse
+			var goodResp itemResponse
 			json.Unmarshal(resp.result, &goodResp)
 			retList = append(retList, goodResp.Data...)
 		}

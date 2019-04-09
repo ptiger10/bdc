@@ -25,7 +25,7 @@ type vendorResource struct {
 
 // All vendors
 func (r vendorResource) All(parameters ...*Parameters) ([]Vendor, error) {
-	results := r.client.getAll(r.endpoint, parameters)
+	results := r.client.getAll(r.suffix, parameters)
 
 	var retList []Vendor
 	var errSlice []string

@@ -13,3 +13,10 @@ Include your credentials in a json file in the same format as `credentials_examp
 
 `c, err := bdc.GetClient("credentials.json")`
 
+## Get all records
+```
+c, _ := bdc.GetClient("credentials.json")
+c.Invoice.All()
+```
+
+Available options: Vendor, Customer, Invoice, Bill, Location, Class, PaymentMade, PaymentReceived

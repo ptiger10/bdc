@@ -39,7 +39,7 @@ type paymentReceivedResource struct {
 
 // All bills
 func (r paymentReceivedResource) All(parameters ...*Parameters) ([]PaymentReceived, error) {
-	results := r.client.getAll(r.endpoint, parameters)
+	results := r.client.getAll(r.suffix, parameters)
 
 	var retList []PaymentReceived
 	var errSlice []string
