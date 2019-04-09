@@ -198,60 +198,6 @@ func NewInvoice(customerName string, invoiceNumber string, dueDate string, class
 	}, nil
 }
 
-// NewInvoiceLineItem returns a pointer to a new invoice line item
-// Only allows for 1 item per invoice line item
-func NewInvoiceLineItem(item string, amount float64, description string) (*InvoiceLineItem, error) {
-	maps, err := getItemsMapping()
-	if err != nil {
-		return nil, fmt.Errorf("Unable to get items mapping: %v", err)
-	}
-	item = maps[item]
-	return &InvoiceLineItem{
-		Entity:      "InvoiceLineItem",
-		ItemID:      item,
-		Amount:      amount,
-		Quantity:    1,
-		Price:       amount,
-		Description: description,
-	}, nil
-}
-
-// NewInvoice returns a new invoice
-// Date must be provided as YYYY-MM-DD
-// InvoiceDate and DueDate are set to be equivalent
-func NewInvoice(customer string, invoiceNumber string, dueDate string, class string, location string,
-	lineItems []*InvoiceLineItem) (Invoice, error) {
-	maps, err := getInvoiceMappings()
-	if err != nil {
-		return Invoice{}, fmt.Errorf("Unable to get convenience mappings to create invoice: %v", err)
-	}
-	location = maps[Locations][location]
-	class = maps[Classes][class]
-
-	var amount float64
-	var lineItemsCopy []InvoiceLineItem
-	for _, lineItem := range lineItems {
-		amount += lineItem.Amount
-		lineItem.LocationID = location
-		lineItem.ClassID = class
-		lineItemsCopy = append(lineItemsCopy, *lineItem) // dereference pointers individually
-	}
-
-	return Invoice{
-		Entity:        "Invoice",
-		CustomerID:    maps[Customers][customer],
-		InvoiceNumber: invoiceNumber,
-		InvoiceDate:   dueDate,
-		DueDate:       dueDate,
-		Amount:        amount,
-		AmountDue:     amount, // upon invoice creation, equivalent to amount
-		ClassID:       class,
-		LocationID:    location,
-
-		LineItems: lineItemsCopy,
-	}, nil
-}
-
 var invoiceSample = `
 {
 	"response_status" : 0,
