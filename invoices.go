@@ -193,6 +193,7 @@ func NewInvoice(customerName string, invoiceNumber string, dueDate string, class
 		AmountDue:     amount, // upon invoice creation, equivalent to amount
 		ClassID:       class,
 		LocationID:    location,
+		ToEmail:	true,
 
 		LineItems: lineItemsCopy,
 	}, nil
