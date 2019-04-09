@@ -8,9 +8,11 @@ import (
 	"strconv"
 )
 
+
 // CreateInvoicesFromCSV converts rows in a CSV into Bill.com invoices
 // File must match template in "csv_example.csv"
 func CreateInvoicesFromCSV(path string) error {
+
 	c, err := GetClient("credentials.json")
 	if err != nil {
 		return fmt.Errorf("Error creating client: %s", err)
@@ -24,6 +26,7 @@ func CreateInvoicesFromCSV(path string) error {
 	if error != nil {
 		return fmt.Errorf("Error parsing CSV at %s: %s", path, err)
 	}
+
 
 	// Looks for an empty InvoiceNumber or a non-repeated invoice number to demarcate a new invoice
 	var invoiceStartLines []int

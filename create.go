@@ -42,6 +42,7 @@ func (c *Client) createEntity(suffix string, entity interface{}) error {
 	_, err := makeRequest(endpoint, body)
 	if err != nil {
 		return fmt.Errorf("Unable to create entity %v at %v: %v", entity, suffix, err)
+
 	}
 	return nil
 }

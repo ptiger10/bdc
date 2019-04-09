@@ -13,8 +13,10 @@ type mapping map[string]string
 
 const mappingsDir string = "bdc_mappings"
 
+
 var availableMappings = []resourceType{Locations, Classes, Customers, Vendors, Items, CustomerAccounts}
 var invoiceCreationMappings = []resourceType{Locations, Classes, Customers}
+
 
 func handleMappingInput(input string) resourceType {
 	output := strings.Title(input)
@@ -56,10 +58,12 @@ func getItemsMapping() (mapping, error) {
 	return m, nil
 }
 
+
 // returns inverted mappings for customer name, locations, and classes
 func getInvoiceCreationMappings() (map[resourceType]mapping, error) {
 	masterMap := make(map[resourceType]mapping)
 	for _, resource := range invoiceCreationMappings {
+
 		m, err := getMapping(resource, true)
 		if err != nil {
 			return nil, fmt.Errorf("Unable to get inverted mappings for invoices: %v", err)
@@ -125,7 +129,9 @@ func (c *Client) updateMappingFile(resource string) error {
 		for _, item := range resp {
 			mapping[item.ID] = item.Name
 		}
+
 	case r == Items:
+
 		resp, err := c.Item.All()
 		if err != nil {
 			return fmt.Errorf("Unable to get items for mapping: %v", err)
@@ -133,6 +139,7 @@ func (c *Client) updateMappingFile(resource string) error {
 		for _, item := range resp {
 			mapping[item.ID] = item.Name
 		}
+
 	case r == CustomerAccounts:
 		resp, err := c.Customer.All()
 		if err != nil {
@@ -141,6 +148,7 @@ func (c *Client) updateMappingFile(resource string) error {
 		for _, item := range resp {
 			mapping[item.ID] = item.AccoutNumber
 		}
+
 	}
 	for k, v := range mapping {
 		mappingInverted[v] = k
