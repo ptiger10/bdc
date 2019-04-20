@@ -3,7 +3,6 @@ package bdc
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"reflect"
 	"time"
@@ -97,10 +96,13 @@ func (r invoiceResource) Create(inv Invoice) error {
 	return err
 }
 
-// Since returns all invoices updated since the time provided
-func (r invoiceResource) Since(t time.Time) ([]Invoice, error) {
-	p := NewParameters()
-	p.AddFilter("updatedTime", ">", t.Format("2006-01-02T15:04:05.999-0700"))
+// Since returns all invoices updated since the time provided.
+// If no additional params to provide, must pass nil explicitly
+func (r invoiceResource) Since(t time.Time, p *Parameters) ([]Invoice, error) {
+	if p == nil {
+		p = NewParameters()
+	}
+	p.AddFilter("updatedTime", ">", t.Format(timeFormat))
 	inv, err := r.client.Invoice.All(p)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to get all invoices since %s: %v", t, err)
@@ -108,23 +110,16 @@ func (r invoiceResource) Since(t time.Time) ([]Invoice, error) {
 	return inv, nil
 }
 
-// SinceLastUpdated retursn all invoices updated since time stored in file,
-// eg last_updated.txt.
-// Must be stored in bdc.timeFormat ie "2006-01-02T15:04:05.999-0700"
-func (r invoiceResource) SinceLastUpdated(filePath string) ([]Invoice, error) {
-	b, err := ioutil.ReadFile(filePath)
+// SinceFileTime returns all invoices updated since the time stored in a text file, eg last_updated.txt.
+// File must store a single value formatted according to bdc.timeFormat string
+// ie "2006-01-02T15:04:05.999-0700"
+// If no additional params to provide, must pass nil explicitly
+func (r invoiceResource) SinceFileTime(filePath string, params *Parameters) ([]Invoice, error) {
+	lastUpdated, err := readTimeFromFile(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to read file %s: %v", filePath, err)
+		return nil, fmt.Errorf("Unable to read time from file: %v", err)
 	}
-	if len(b) == 0 {
-		return nil, fmt.Errorf("File %s is empty", filePath)
-	}
-	lastUpdated, err := time.Parse(timeFormat, string(b))
-	if err != nil {
-		return nil, fmt.Errorf("Unable to parse time %s in format %s: %v", b, timeFormat, err)
-	}
-
-	inv, err := r.Since(lastUpdated)
+	inv, err := r.Since(lastUpdated, params)
 	if err != nil {
 		return nil, err
 	}
@@ -170,7 +165,7 @@ func (r invoiceResource) Update(updates Invoice) error {
 }
 
 // NewInvoiceLineItem returns a pointer to a new invoice line item
-// Only allows for 1 item per invoice line item
+// Only allows for a quantity of 1 per invoice line item
 func NewInvoiceLineItem(itemName string, amount float64, description string) (*InvoiceLineItem, error) {
 	maps, err := getItemsMapping()
 	if err != nil {

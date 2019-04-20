@@ -59,12 +59,13 @@ func (c *Client) countRoutine(pages <-chan int, result chan<- int, endpoint stri
 
 // count the max number of pages to fetch by inspecting whether each subsequent page returns a value
 func (c *Client) countPages(endpoint string, filters, sorts []map[string]interface{}) int {
-	var countRoutines int
-	if workersMax > 1 {
-		countRoutines = workersMax - 1 // sometimes a trailing goroutine exceeds the allowable concurrent threads
-	} else {
-		countRoutines = 1
-	}
+	countRoutines := workersMax
+	// var countRoutines int
+	// if workersMax > 1 {
+	// 	countRoutines = workersMax - 1 // sometimes a trailing goroutine exceeds the allowable concurrent threads
+	// } else {
+	// 	countRoutines = 1
+	// }
 	pages := make(chan int)
 	result := make(chan int)
 	for i := 0; i < countRoutines; i++ {

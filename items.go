@@ -12,7 +12,7 @@ type itemResponse struct {
 // Item in Bill.com
 type Item struct {
 	Entity      string `json:"entity"`
-	CreatedTime string `json:"createdTime,string"`
+	CreatedTime string `json:"createdTime"`
 	UpdatedTime string `json:"updatedTime"`
 	IsActive    string `json:"isActive"`
 	ID          string `json:"id"`

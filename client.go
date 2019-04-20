@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 const (
@@ -67,22 +68,6 @@ type baseResponse struct {
 
 const timeFormat = "2006-01-02T15:04:05.999-0700"
 
-type resourceType string
-
-// Resource type options
-const (
-	Locations        resourceType = "Locations"
-	Classes                       = "Classes"
-	Customers                     = "Customers"
-	Vendors                       = "Vendors"
-	Invoices                      = "Invoices"
-	Bills                         = "Bills"
-	BillPayments                  = "BillPayments"
-	Payments                      = "Payments"
-	Items                         = "Items"
-	CustomerAccounts              = "CustomerAccounts"
-)
-
 var client = new(Client)
 
 // GetClient returns an authenticated client. Will reuse the existing client if available.
@@ -110,6 +95,7 @@ func GetClient(path string) (*Client, error) {
 	return client, nil
 }
 
+// Client Convenience Functions
 // make an HTTP request
 func makeRequest(endpoint string, body io.Reader) ([]byte, error) {
 	url := baseURL + endpoint
@@ -127,4 +113,20 @@ func makeRequest(endpoint string, body io.Reader) ([]byte, error) {
 		return nil, fmt.Errorf("Unable to get data from page: %v", err)
 	}
 	return r, nil
+}
+
+// read a time from a file; for use with resource-specific SinceFileTime()
+func readTimeFromFile(filePath string) (time.Time, error) {
+	b, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("Unable to read file %s: %v", filePath, err)
+	}
+	if len(b) == 0 {
+		return time.Time{}, fmt.Errorf("File %s is empty", filePath)
+	}
+	lastUpdated, err := time.Parse(timeFormat, string(b))
+	if err != nil {
+		return time.Time{}, fmt.Errorf("Unable to parse time %s in format %s: %v", b, timeFormat, err)
+	}
+	return lastUpdated, nil
 }

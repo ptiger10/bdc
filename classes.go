@@ -12,7 +12,7 @@ type classResponse struct {
 // Class is an accounting class in Bill.com (matches QBO class)
 type Class struct {
 	Entity      string `json:"entity"`
-	CreatedTime string `json:"createdTime,string"`
+	CreatedTime string `json:"createdTime"`
 	UpdatedTime string `json:"updatedTime"`
 	IsActive    string `json:"isActive"`
 	ID          string `json:"id"`

@@ -3,6 +3,7 @@ package bdc
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 type paymentResponse struct {
@@ -55,4 +56,34 @@ func (r paymentReceivedResource) All(parameters ...*Parameters) ([]PaymentReceiv
 	err := handleErrSlice(errSlice)
 
 	return retList, err
+}
+
+// Since returns all payments received since the time provided.
+// If no additional params to provide, must pass nil explicitly
+func (r paymentReceivedResource) Since(t time.Time, p *Parameters) ([]PaymentReceived, error) {
+	if p == nil {
+		p = NewParameters()
+	}
+	p.AddFilter("updatedTime", ">", t.Format(timeFormat))
+	payments, err := r.client.PaymentReceived.All(p)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to get all payments received since %s: %v", t, err)
+	}
+	return payments, nil
+}
+
+// SinceFileTime returns all payments updated since the time stored in a text file, eg last_updated.txt.
+// File must store a single value formatted according to bdc.timeFormat string
+// ie "2006-01-02T15:04:05.999-0700"
+// If no additional params to provide, must pass nil explicitly
+func (r paymentReceivedResource) SinceFileTime(filePath string, params *Parameters) ([]PaymentReceived, error) {
+	lastUpdated, err := readTimeFromFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to read time from file: %v", err)
+	}
+	payments, err := r.Since(lastUpdated, params)
+	if err != nil {
+		return nil, err
+	}
+	return payments, nil
 }
