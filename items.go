@@ -3,6 +3,7 @@ package bdc
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 type itemResponse struct {
@@ -43,4 +44,18 @@ func (r itemResource) All(parameters ...*Parameters) ([]Item, error) {
 	err := handleErrSlice(errSlice)
 
 	return retList, err
+}
+
+// Since returns all items updated since the time provided.
+// If no additional params to provide, must pass nil explicitly
+func (r itemResource) Since(t time.Time, p *Parameters) ([]Item, error) {
+	if p == nil {
+		p = NewParameters()
+	}
+	p.AddFilter("updatedTime", ">", t.Format(timeFormat))
+	items, err := r.client.Item.All(p)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to get all Items updated since %s: %v", t, err)
+	}
+	return items, nil
 }

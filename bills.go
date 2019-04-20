@@ -3,6 +3,7 @@ package bdc
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 type billResponse struct {
@@ -27,7 +28,7 @@ type Bill struct {
 		ItemID      string  `json:"itemId"`
 		Quantity    int     `json:"quantity"`
 		Price       float64 `json:"unitPrice"`
-		ClassID     string  `json:"actgClassId"`
+		BillID      string  `json:"actgBillId"`
 		LocationID  string  `json:"locationId"`
 		Description string  `json:"description"`
 	} `json:"billLineItems"`
@@ -55,4 +56,18 @@ func (r billResource) All(parameters ...*Parameters) ([]Bill, error) {
 	err := handleErrSlice(errSlice)
 
 	return retList, err
+}
+
+// Since returns all bills updated since the time provided.
+// If no additional params to provide, must pass nil explicitly
+func (r billResource) Since(t time.Time, p *Parameters) ([]Bill, error) {
+	if p == nil {
+		p = NewParameters()
+	}
+	p.AddFilter("updatedTime", ">", t.Format(timeFormat))
+	bills, err := r.client.Bill.All(p)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to get all Bills updated since %s: %v", t, err)
+	}
+	return bills, nil
 }

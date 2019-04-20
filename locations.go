@@ -3,6 +3,7 @@ package bdc
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 type locationResponse struct {
@@ -43,4 +44,18 @@ func (r locationResource) All(parameters ...*Parameters) ([]Location, error) {
 	err := handleErrSlice(errSlice)
 
 	return retList, err
+}
+
+// Since returns all locations updated since the time provided.
+// If no additional params to provide, must pass nil explicitly
+func (r locationResource) Since(t time.Time, p *Parameters) ([]Location, error) {
+	if p == nil {
+		p = NewParameters()
+	}
+	p.AddFilter("updatedTime", ">", t.Format(timeFormat))
+	locations, err := r.client.Location.All(p)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to get all Locations updated since %s: %v", t, err)
+	}
+	return locations, nil
 }

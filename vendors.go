@@ -3,6 +3,7 @@ package bdc
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 type vendorResponse struct {
@@ -43,4 +44,18 @@ func (r vendorResource) All(parameters ...*Parameters) ([]Vendor, error) {
 	err := handleErrSlice(errSlice)
 
 	return retList, err
+}
+
+// Since returns all vendors updated since the time provided.
+// If no additional params to provide, must pass nil explicitly
+func (r vendorResource) Since(t time.Time, p *Parameters) ([]Vendor, error) {
+	if p == nil {
+		p = NewParameters()
+	}
+	p.AddFilter("updatedTime", ">", t.Format(timeFormat))
+	vendors, err := r.client.Vendor.All(p)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to get all vendors updated since %s: %v", t, err)
+	}
+	return vendors, nil
 }

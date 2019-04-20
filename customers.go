@@ -3,6 +3,7 @@ package bdc
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 type customerResponse struct {
@@ -15,14 +16,14 @@ type customerResp struct {
 
 // Customer in Bill.com
 type Customer struct {
-	ID           string `json:"id"`
-	CreatedTime  string `json:"createdTime"`
-	UpdatedTime  string `json:"updatedTime"`
-	Entity       string `json:"entity"`
-	IsActive     string `json:"isActive"`
-	Name         string `json:"name"`
-	AccoutNumber string `json:"accNumber"`
-	Email        string `json:"email"`
+	ID            string `json:"id"`
+	CreatedTime   string `json:"createdTime"`
+	UpdatedTime   string `json:"updatedTime"`
+	Entity        string `json:"entity"`
+	IsActive      string `json:"isActive"`
+	Name          string `json:"name"`
+	AccountNumber string `json:"accNumber"`
+	Email         string `json:"email"`
 }
 
 type customerResource struct {
@@ -58,4 +59,18 @@ func (r customerResource) All(parameters ...*Parameters) ([]Customer, error) {
 	err := handleErrSlice(errSlice)
 
 	return retList, err
+}
+
+// Since returns all customers updated since the time provided.
+// If no additional params to provide, must pass nil explicitly
+func (r customerResource) Since(t time.Time, p *Parameters) ([]Customer, error) {
+	if p == nil {
+		p = NewParameters()
+	}
+	p.AddFilter("updatedTime", ">", t.Format(timeFormat))
+	customers, err := r.client.Customer.All(p)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to get all Customers updated since %s: %v", t, err)
+	}
+	return customers, nil
 }

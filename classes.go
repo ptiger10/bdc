@@ -3,6 +3,7 @@ package bdc
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 type classResponse struct {
@@ -43,4 +44,18 @@ func (r classResource) All(parameters ...*Parameters) ([]Class, error) {
 	err := handleErrSlice(errSlice)
 
 	return retList, err
+}
+
+// Since returns all Classes updated since the time provided.
+// If no additional params to provide, must pass nil explicitly
+func (r classResource) Since(t time.Time, p *Parameters) ([]Class, error) {
+	if p == nil {
+		p = NewParameters()
+	}
+	p.AddFilter("updatedTime", ">", t.Format(timeFormat))
+	classes, err := r.client.Class.All(p)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to get all Classs updated since %s: %v", t, err)
+	}
+	return classes, nil
 }
