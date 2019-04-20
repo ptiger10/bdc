@@ -7,16 +7,15 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 )
 
 type mapping map[string]string
 
 const mappingsDir string = "bdc_mappings"
 
-
 var availableMappings = []resourceType{Locations, Classes, Customers, Vendors, Items, CustomerAccounts}
 var invoiceCreationMappings = []resourceType{Locations, Classes, Customers}
-
 
 func handleMappingInput(input string) resourceType {
 	output := strings.Title(input)
@@ -57,7 +56,6 @@ func getItemsMapping() (mapping, error) {
 	}
 	return m, nil
 }
-
 
 // returns inverted mappings for customer name, locations, and classes
 func getInvoiceCreationMappings() (map[resourceType]mapping, error) {
@@ -170,6 +168,7 @@ func (c *Client) updateMappingFile(resource string) error {
 }
 
 func writeToMappingFile(mapping map[string]string, cleanedInput string, inverted bool) error {
+	mapping["*-LastUpdated"] = time.Now().UTC().Format("2006-01-02T15:04:05.999-0700")
 	jsonBlob, err := json.MarshalIndent(mapping, "", "  ")
 	if err != nil {
 		return fmt.Errorf("Unable to marshal json for resourceType %v: %v", cleanedInput, err)
@@ -178,12 +177,10 @@ func writeToMappingFile(mapping map[string]string, cleanedInput string, inverted
 	if inverted {
 		invertedTag = "_inverted"
 	}
-	filePath := path.Join("bdc_mappings", cleanedInput+invertedTag+".json")
-	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0666)
-	defer file.Close()
+	filePath := path.Join(mappingsDir, cleanedInput+invertedTag+".json")
+	err = ioutil.WriteFile(filePath, jsonBlob, 0666)
 	if err != nil {
-		return fmt.Errorf("Unable to open file for resourceType %v: %v", cleanedInput, err)
+		return fmt.Errorf("Unable to write file for resourceType %v at %v: %v", cleanedInput, filePath, err)
 	}
-	file.Write(jsonBlob)
 	return nil
 }

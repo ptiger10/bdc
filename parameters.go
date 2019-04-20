@@ -32,8 +32,8 @@ func (p *Parameters) AddFilter(field string, operator string, value interface{})
 }
 
 // AddSort to a Parameters object
-// asc = 0; sort descending
-// asc = 1: sort ascending
+// descending (asc = 0);
+// ascending (asc = 1)
 func (p *Parameters) AddSort(field string, asc int) {
 	p.sorts = append(p.sorts, sortOption{field, asc})
 }

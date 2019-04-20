@@ -8,7 +8,6 @@ import (
 	"strconv"
 )
 
-
 // CreateInvoicesFromCSV converts rows in a CSV into Bill.com invoices
 // File must match template in "csv_example.csv"
 func (c *Client) CreateInvoicesFromCSV(path string) error {
@@ -22,7 +21,6 @@ func (c *Client) CreateInvoicesFromCSV(path string) error {
 	if error != nil {
 		return fmt.Errorf("Error parsing CSV at %s: %s", path, err)
 	}
-
 
 	// Looks for an empty InvoiceNumber or a non-repeated invoice number to demarcate a new invoice
 	var invoiceStartLines []int
@@ -76,13 +74,13 @@ func (c *Client) CreateInvoicesFromCSV(path string) error {
 			description := row[7]
 			li, err := NewInvoiceLineItem(item, amount, description)
 			if err != nil {
-				return fmt.Errorf("Error making invoice line item on row %v: %v", offset, err)
+				return fmt.Errorf("Error creating invoice line item on row %v: %v", offset, err)
 			}
 			invoiceLineItems = append(invoiceLineItems, li)
 		}
 		invoice, err := NewInvoice(customer, invoiceNumber, dueDate, class, location, invoiceLineItems)
 		if err != nil {
-			return fmt.Errorf("Error populating invoice that starts on line %v: %v", invoiceStartLine, err)
+			return fmt.Errorf("Error creating invoice that starts on line %v: %v", invoiceStartLine, err)
 		}
 		err = c.Invoice.Create(invoice)
 		if err != nil {

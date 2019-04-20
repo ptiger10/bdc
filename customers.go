@@ -16,6 +16,8 @@ type customerResp struct {
 // Customer in Bill.com
 type Customer struct {
 	ID           string `json:"id"`
+	CreatedTime  string `json:"createdTime"`
+	UpdatedTime  string `json:"updatedTime"`
 	Entity       string `json:"entity"`
 	IsActive     string `json:"isActive"`
 	Name         string `json:"name"`

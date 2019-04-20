@@ -12,6 +12,8 @@ type billResponse struct {
 // Bill in Bill.com
 type Bill struct {
 	Entity        string `json:"entity"`
+	CreatedTime   string `json:"createdTime"`
+	UpdatedTime   string `json:"updatedTime"`
 	IsActive      string `json:"isActive"`
 	VendorID      string `json:"vendorId"`
 	ID            string `json:"id"`

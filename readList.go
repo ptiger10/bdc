@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"net/http"
 	"net/url"
 	"sort"
 	"strings"
@@ -16,7 +14,7 @@ import (
 var wg sync.WaitGroup
 
 // convert JSON values into a URL string
-func encodeReadData(c *Client, start int, max int, filters, sorts []map[string]interface{}) io.Reader {
+func encodeReadListData(c *Client, start int, max int, filters, sorts []map[string]interface{}) io.Reader {
 	// common pagination operators
 	values := map[string]interface{}{"start": start * max, "max": max}
 	// query specific filters, if any
@@ -33,28 +31,9 @@ func encodeReadData(c *Client, start int, max int, filters, sorts []map[string]i
 	return body
 }
 
-// make an HTTP request
-func makeRequest(endpoint string, body io.Reader) ([]byte, error) {
-	url := baseURL + endpoint
-	resp, err := http.Post(url, "application/x-www-form-urlencoded", body)
-	if err != nil {
-		return nil, fmt.Errorf("Unable to send Post request to %s: %s", url, err)
-	}
-	defer resp.Body.Close()
-	r, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("Unable to read resp body from %s: %s", url, err)
-	}
-	err = handleError(r, url)
-	if err != nil {
-		return nil, fmt.Errorf("Unable to get data from page: %v", err)
-	}
-	return r, nil
-}
-
 // Get up to pageMax records from an endpoint starting at record number "start" with optional filters
 func (c *Client) getPage(start int, max int, endpoint string, filters, sorts []map[string]interface{}) resultError {
-	body := encodeReadData(c, start, max, filters, sorts)
+	body := encodeReadListData(c, start, max, filters, sorts)
 	resp, err := makeRequest(endpoint, body)
 	if err != nil {
 		return resultError{err: err}
@@ -64,7 +43,7 @@ func (c *Client) getPage(start int, max int, endpoint string, filters, sorts []m
 
 // goroutine to check whether an item exists at a specific location,
 // for use with countPages
-func (c *Client) workerCounter(pages <-chan int, result chan<- int, endpoint string, filters, sorts []map[string]interface{}) {
+func (c *Client) countRoutine(pages <-chan int, result chan<- int, endpoint string, filters, sorts []map[string]interface{}) {
 	for {
 		p := <-pages
 		position := p * pageMax
@@ -80,11 +59,16 @@ func (c *Client) workerCounter(pages <-chan int, result chan<- int, endpoint str
 
 // count the max number of pages to fetch by inspecting whether each subsequent page returns a value
 func (c *Client) countPages(endpoint string, filters, sorts []map[string]interface{}) int {
-	const workers = workersMax
+	var countRoutines int
+	if workersMax > 1 {
+		countRoutines = workersMax - 1 // sometimes a trailing goroutine exceeds the allowable concurrent threads
+	} else {
+		countRoutines = 1
+	}
 	pages := make(chan int)
 	result := make(chan int)
-	for i := 0; i < workers; i++ {
-		go c.workerCounter(pages, result, endpoint, filters, sorts)
+	for i := 0; i < countRoutines; i++ {
+		go c.countRoutine(pages, result, endpoint, filters, sorts)
 	}
 
 	go func() {
@@ -104,7 +88,7 @@ func (c *Client) countPages(endpoint string, filters, sorts []map[string]interfa
 
 // goroutine for fetching a page of results at a specified List endpoint;
 // for use with getAll()
-func (c *Client) worker(pages <-chan int, results chan<- resultError, endpoint string, filters, sorts []map[string]interface{}) {
+func (c *Client) fetchRoutine(pages <-chan int, results chan<- resultError, endpoint string, filters, sorts []map[string]interface{}) {
 	for {
 		p, ok := <-pages
 		if !ok {
@@ -125,17 +109,19 @@ func (c *Client) worker(pages <-chan int, results chan<- resultError, endpoint s
 }
 
 // getAll is called by a specific resource, eg invoiceResource,
-// and deploys asynchronous workers to fetch all the items on all the pages with items
+// deploys asynchronous countRoutines to count the number of pages available,
+// then deploys asynchronous fetchRoutines to fetch all the items from all the available pages
 func (c *Client) getAll(suffix string, parameters []*Parameters) (result []resultError) {
 	endpoint := "List/" + suffix
 	filters, sorts := encodeParameters(parameters)
 	numPages := c.countPages(endpoint, filters, sorts)
+	time.Sleep(500 * time.Millisecond) // sometimes a trailing goroutine exceeds the allowable concurrent threads
 
 	pages := make(chan int)
 	results := make(chan resultError, numPages)
 	wg.Add(workersMax)
 	for i := 0; i < workersMax; i++ {
-		go c.worker(pages, results, endpoint, filters, sorts)
+		go c.fetchRoutine(pages, results, endpoint, filters, sorts)
 	}
 	for i := 0; i < numPages; i++ {
 		pages <- i

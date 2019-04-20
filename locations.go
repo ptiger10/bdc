@@ -12,6 +12,8 @@ type locationResponse struct {
 // Location in Bill.com
 type Location struct {
 	Entity      string `json:"entity"`
+	CreatedTime string `json:"createdTime,string"`
+	UpdatedTime string `json:"updatedTime"`
 	IsActive    string `json:"isActive"`
 	ID          string `json:"id"`
 	Name        string `json:"name"`

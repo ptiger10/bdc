@@ -12,6 +12,8 @@ type vendorResponse struct {
 // Vendor in Bill.com
 type Vendor struct {
 	ID           string `json:"id"`
+	CreatedTime  string `json:"createdTime"`
+	UpdatedTime  string `json:"updatedTime"`
 	Entity       string `json:"entity"`
 	Name         string `json:"name"`
 	IsActive     string `json:"isActive"`

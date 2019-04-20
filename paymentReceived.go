@@ -12,6 +12,8 @@ type paymentResponse struct {
 // PaymentReceived in Bill.com, associated with an invoice
 type PaymentReceived struct {
 	ID            string  `json:"id"`
+	CreatedTime   string  `json:"createdTime"`
+	UpdatedTime   string  `json:"updatedTime"`
 	Amount        float64 `json:"amount"`
 	ConvFeeAmount float64 `json:"convFeeAmount"`
 	Entity        string  `json:"entity"`
@@ -20,8 +22,6 @@ type PaymentReceived struct {
 	CustomerID    string  `json:"customerId"`
 	InvoiceNumber string  `json:"invoiceNumber"`
 	Description   string  `json:"description"`
-	CreatedTime   string  `json:"createdTime"`
-	UpdatedTime   string  `json:"updatedTime"`
 	InvoicePays   []struct {
 		ID          string  `json:"id"`
 		InvoiceID   string  `json:"invoiceId"`

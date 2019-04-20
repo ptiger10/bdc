@@ -3,8 +3,10 @@ package bdc
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"reflect"
+	"time"
 )
 
 // Slice of invoices
@@ -20,6 +22,8 @@ type invoiceResp struct {
 // Invoice in Bill.com
 type Invoice struct {
 	ID            string            `json:"id"`
+	CreatedTime   string            `json:"createdTime"`
+	UpdatedTime   string            `json:"updatedTime"`
 	AmountDue     float64           `json:"amountDue"`
 	Amount        float64           `json:"amount"`
 	PaymentStatus string            `json:"paymentStatus"`
@@ -93,6 +97,40 @@ func (r invoiceResource) Create(inv Invoice) error {
 	return err
 }
 
+// Since returns all invoices updated since the time provided
+func (r invoiceResource) Since(t time.Time) ([]Invoice, error) {
+	p := NewParameters()
+	p.AddFilter("updatedTime", ">", t.Format("2006-01-02T15:04:05.999-0700"))
+	inv, err := r.client.Invoice.All(p)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to get all invoices since %s: %v", t, err)
+	}
+	return inv, nil
+}
+
+// SinceLastUpdated retursn all invoices updated since time stored in file,
+// eg last_updated.txt.
+// Must be stored in bdc.timeFormat ie "2006-01-02T15:04:05.999-0700"
+func (r invoiceResource) SinceLastUpdated(filePath string) ([]Invoice, error) {
+	b, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to read file %s: %v", filePath, err)
+	}
+	if len(b) == 0 {
+		return nil, fmt.Errorf("File %s is empty", filePath)
+	}
+	lastUpdated, err := time.Parse(timeFormat, string(b))
+	if err != nil {
+		return nil, fmt.Errorf("Unable to parse time %s in format %s: %v", b, timeFormat, err)
+	}
+
+	inv, err := r.Since(lastUpdated)
+	if err != nil {
+		return nil, err
+	}
+	return inv, nil
+}
+
 // Update one invoice.
 // Supply an Invoice with just the updates you want; all other fields will be preserved.
 func (r invoiceResource) Update(updates Invoice) error {
@@ -140,7 +178,7 @@ func NewInvoiceLineItem(itemName string, amount float64, description string) (*I
 	}
 	item, ok := maps[itemName]
 	if !ok {
-		return nil, fmt.Errorf("Item %v not in mapping. Could not create invoice line item", itemName)
+		return nil, fmt.Errorf("Item %v not in mapping. Check file in %v for valid mappings line item", itemName, mappingsDir)
 	}
 	return &InvoiceLineItem{
 		Entity:      "InvoiceLineItem",
@@ -163,15 +201,15 @@ func NewInvoice(customerName string, invoiceNumber string, dueDate string, class
 	}
 	location, ok := maps[Locations][locationName]
 	if !ok {
-		return Invoice{}, fmt.Errorf("Location %v not in mapping. Could not create invoice", locationName)
+		return Invoice{}, fmt.Errorf("Location %v not in mapping. Check file in %v for valid mappings", locationName, mappingsDir)
 	}
 	class, ok := maps[Classes][className]
 	if !ok {
-		return Invoice{}, fmt.Errorf("Class %v not in mapping. Could not create invoice", className)
+		return Invoice{}, fmt.Errorf("Class %v not in mapping. Check file in %v for valid mappings", className, mappingsDir)
 	}
 	customer, ok := maps[Customers][customerName]
 	if !ok {
-		return Invoice{}, fmt.Errorf("Customer %v not in mapping. Could not create invoice", customerName)
+		return Invoice{}, fmt.Errorf("Customer %v not in mapping. Check file in %v for valid mappings", customerName, mappingsDir)
 	}
 
 	var amount float64
@@ -193,7 +231,7 @@ func NewInvoice(customerName string, invoiceNumber string, dueDate string, class
 		AmountDue:     amount, // upon invoice creation, equivalent to amount
 		ClassID:       class,
 		LocationID:    location,
-		ToEmail:	true,
+		ToEmail:       true,
 
 		LineItems: lineItemsCopy,
 	}, nil

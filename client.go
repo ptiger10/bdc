@@ -2,6 +2,9 @@ package bdc
 
 import (
 	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
 )
 
 const (
@@ -34,6 +37,7 @@ type credentials struct {
 type Client struct {
 	sessionID       string
 	devKey          string
+	Reports         reports
 	Customer        customerResource
 	Vendor          vendorResource
 	Invoice         invoiceResource
@@ -61,6 +65,8 @@ type baseResponse struct {
 	Data []map[string]interface{} `json:"response_data"`
 }
 
+const timeFormat = "2006-01-02T15:04:05.999-0700"
+
 type resourceType string
 
 // Resource type options
@@ -75,7 +81,6 @@ const (
 	Payments                      = "Payments"
 	Items                         = "Items"
 	CustomerAccounts              = "CustomerAccounts"
-
 )
 
 var client = new(Client)
@@ -92,6 +97,7 @@ func GetClient(path string) (*Client, error) {
 		client = &Client{sessionID: sid, devKey: creds.DevKey}
 	}
 
+	client.Reports = reports{client: client}
 	client.Customer = customerResource{resourceFields{suffix: customerSuffix, client: client}}
 	client.Vendor = vendorResource{resourceFields{suffix: vendorSuffix, client: client}}
 	client.Invoice = invoiceResource{resourceFields{suffix: invoiceSuffix, client: client}}
@@ -102,4 +108,23 @@ func GetClient(path string) (*Client, error) {
 	client.Class = classResource{resourceFields{suffix: classSuffix, client: client}}
 	client.Item = itemResource{resourceFields{suffix: itemSuffix, client: client}}
 	return client, nil
+}
+
+// make an HTTP request
+func makeRequest(endpoint string, body io.Reader) ([]byte, error) {
+	url := baseURL + endpoint
+	resp, err := http.Post(url, "application/x-www-form-urlencoded", body)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to send Post request to %s: %s", url, err)
+	}
+	defer resp.Body.Close()
+	r, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to read resp body from %s: %s", url, err)
+	}
+	err = handleError(r, url)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to get data from page: %v", err)
+	}
+	return r, nil
 }
