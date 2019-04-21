@@ -10,6 +10,7 @@ import (
 
 // CreateInvoicesFromCSV converts rows in a CSV into Bill.com invoices
 // File must match template in "csv_example.csv"
+// Best practice is to run c.UpdateInvoiceMappings() prior so that all lookups succeed
 func (c *Client) CreateInvoicesFromCSV(path string) error {
 
 	data, err := ioutil.ReadFile(path)
@@ -45,15 +46,17 @@ func (c *Client) CreateInvoicesFromCSV(path string) error {
 		}
 	}
 
-	var lineOffsets []int
+	// If nRows = 5, invoices starting on lines [1, 3, 5]
+	// would have line counts [2, 2, 1]
+	linesInInvoice := make([]int, 0)
 	if len(invoiceStartLines) == 0 {
 		return fmt.Errorf("No invoices to write")
 	}
-	for idx, val := range invoiceStartLines {
+	for idx := range invoiceStartLines {
 		if idx == len(invoiceStartLines)-1 {
-			lineOffsets = append(lineOffsets, len(records)-val)
+			linesInInvoice[idx] = len(records) - invoiceStartLines[idx]
 		} else {
-			lineOffsets = append(lineOffsets, invoiceStartLines[idx+1]-val)
+			linesInInvoice[idx] = invoiceStartLines[idx+1] - invoiceStartLines[idx]
 
 		}
 
@@ -66,15 +69,15 @@ func (c *Client) CreateInvoicesFromCSV(path string) error {
 		class := firstRow[3]
 		location := firstRow[4]
 		var invoiceLineItems []*InvoiceLineItem
-		for offset := invoiceStartLine; offset < invoiceStartLine+lineOffsets[idx]; offset++ {
-			row := records[offset]
+		for line := invoiceStartLine; line < invoiceStartLine+linesInInvoice[idx]; line++ {
+			row := records[line]
 			item := row[5]
 			amount, err := strconv.ParseFloat(row[6], 8)
 
 			description := row[7]
 			li, err := NewInvoiceLineItem(item, amount, description)
 			if err != nil {
-				return fmt.Errorf("Error creating invoice line item on row %v: %v", offset, err)
+				return fmt.Errorf("Error creating invoice line item on row %v: %v", line, err)
 			}
 			invoiceLineItems = append(invoiceLineItems, li)
 		}

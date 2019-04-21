@@ -17,11 +17,11 @@ type resourceType string
 const (
 	Locations            resourceType = "Locations"
 	Classes                           = "Classes"
-	Customers                         = "Customers"
+	Customers                         = "Customers" // customer name to bill.com id
 	Vendors                           = "Vendors"
 	Items                             = "Items"
-	CustomerAccountsID                = "CustomerAccountsID"
-	CustomerAccountsName              = "CustomerAccountsName"
+	CustomerAccountsID                = "CustomerAccountsID"   // account number to bill.com id
+	CustomerAccountsName              = "CustomerAccountsName" // customer name to account number
 )
 
 type mapping map[string]string
@@ -37,7 +37,8 @@ var availableMappings = []resourceType{Locations, Classes, Customers, Vendors, I
 // The map enables convenient lookups of customer identifiers.
 // Every map includes an entry  "*-LastUpdated" with a timestamp of the last time the file was updated
 func (c *Client) FetchAllMappingFiles() error {
-	spin(fmt.Sprintf("Fetching all mapping files and writing to %s/ folder", mappingsDir))
+	log.Printf("Fetching all mapping files and writing to %s/ folder.\nThis may take several moments...",
+		mappingsDir)
 	for _, resource := range availableMappings {
 		err := c.FetchMappingFile(resource)
 		if err != nil {
@@ -120,6 +121,19 @@ func (c *Client) UpdateMappingFile(resource resourceType) error {
 	err = updateMappingFile(mInverted, resource, now)
 	if err != nil {
 		return fmt.Errorf("Unable to update mapping file: %v", err)
+	}
+	return nil
+}
+
+// UpdateInvoiceMappings updates the mapping files in bdc_mappings/
+// that assist in creating new invoices and invoice line items
+func (c *Client) UpdateInvoiceMappings() error {
+	resources := []resourceType{Locations, Classes, Customers, Items}
+	for _, resource := range resources {
+		err := c.UpdateMappingFile(resource)
+		if err != nil {
+			return fmt.Errorf("Unable to update all mappings - stopped at %v: %v", resource, err)
+		}
 	}
 	return nil
 }

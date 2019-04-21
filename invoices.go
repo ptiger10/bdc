@@ -128,6 +128,7 @@ func (r invoiceResource) SinceFileTime(filePath string, params *Parameters) ([]I
 
 // Update one invoice.
 // Supply an Invoice with just the updates you want; all other fields will be preserved.
+// Must supply an ID
 func (r invoiceResource) Update(updates Invoice) error {
 	if updates.ID == "" {
 		return fmt.Errorf("Must provide invoice ID to update")
@@ -173,7 +174,7 @@ func NewInvoiceLineItem(itemName string, amount float64, description string) (*I
 	}
 	item, ok := maps[itemName]
 	if !ok {
-		return nil, fmt.Errorf("Item %v not in mapping. Check file in %v for valid mappings line item", itemName, mappingsDir)
+		return nil, fmt.Errorf("Item %v not in mapping. Check file in %v for valid mappings line item and run client.UpdateAllMappingFiles if necessary", itemName, mappingsDir)
 	}
 	return &InvoiceLineItem{
 		Entity:      "InvoiceLineItem",
@@ -188,6 +189,7 @@ func NewInvoiceLineItem(itemName string, amount float64, description string) (*I
 // NewInvoice returns a new invoice
 // Date must be provided as YYYY-MM-DD
 // InvoiceDate and DueDate are set to be equivalent
+// Best practice is to run c.UpdateInvoiceMappings() prior
 func NewInvoice(customerName string, invoiceNumber string, dueDate string, className string, locationName string,
 	lineItems []*InvoiceLineItem) (Invoice, error) {
 	maps, err := getInvoiceCreationMappings()
@@ -196,15 +198,15 @@ func NewInvoice(customerName string, invoiceNumber string, dueDate string, class
 	}
 	location, ok := maps[Locations][locationName]
 	if !ok {
-		return Invoice{}, fmt.Errorf("Location %v not in mapping. Check file in %v for valid mappings", locationName, mappingsDir)
+		return Invoice{}, fmt.Errorf("Location %v not in mapping. Check file in %v for valid mappings and run client.UpdateAllMappingFiles if necessary", locationName, mappingsDir)
 	}
 	class, ok := maps[Classes][className]
 	if !ok {
-		return Invoice{}, fmt.Errorf("Class %v not in mapping. Check file in %v for valid mappings", className, mappingsDir)
+		return Invoice{}, fmt.Errorf("Class %v not in mapping. Check file in %v for valid mappings and run client.UpdateAllMappingFiles if necessary", className, mappingsDir)
 	}
 	customer, ok := maps[Customers][customerName]
 	if !ok {
-		return Invoice{}, fmt.Errorf("Customer %v not in mapping. Check file in %v for valid mappings", customerName, mappingsDir)
+		return Invoice{}, fmt.Errorf("Customer %v not in mapping. Check file in %v for valid mappings and run client.UpdateAllMappingFiles if necessary", customerName, mappingsDir)
 	}
 
 	var amount float64
