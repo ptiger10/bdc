@@ -101,7 +101,7 @@ func (r invoiceResource) Since(t time.Time, p *Parameters) ([]Invoice, error) {
 	if p == nil {
 		p = NewParameters()
 	}
-	p.AddFilter("updatedTime", ">", t.Format(timeFormat))
+	p.AddFilter("updatedTime", ">", t.Format(TimeFormat))
 	inv, err := r.client.Invoice.All(p)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to get all invoices since %s: %v", t, err)
@@ -110,7 +110,7 @@ func (r invoiceResource) Since(t time.Time, p *Parameters) ([]Invoice, error) {
 }
 
 // SinceFileTime returns all invoices updated since the time stored in a text file, eg last_updated.txt.
-// File must store a single value formatted according to bdc.timeFormat string
+// File must store a single value formatted according to bdc.TimeFormat string
 // ie "2006-01-02T15:04:05.999-0700"
 // If no additional params to provide, must pass nil explicitly
 func (r invoiceResource) SinceFileTime(filePath string, params *Parameters) ([]Invoice, error) {

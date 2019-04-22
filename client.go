@@ -70,8 +70,11 @@ type confirmationResponse struct {
 	Data map[string]interface{} `json:"response_data"`
 }
 
-const timeFormat = "2006-01-02T15:04:05.999-0700"
-const dateFormat = "2006-01-02"
+// TimeFormat is the format Bill.com uses for times
+const TimeFormat = "2006-01-02T15:04:05.999-0700"
+
+// DateFormat is the format Bill.com uses for dates
+const DateFormat = "2006-01-02"
 
 var client = new(Client)
 
@@ -129,9 +132,9 @@ func readTimeFromFile(filePath string) (time.Time, error) {
 	if len(b) == 0 {
 		return time.Time{}, fmt.Errorf("File %s is empty", filePath)
 	}
-	lastUpdated, err := time.Parse(timeFormat, string(b))
+	lastUpdated, err := time.Parse(TimeFormat, string(b))
 	if err != nil {
-		return time.Time{}, fmt.Errorf("Unable to parse time %s in format %s: %v", b, timeFormat, err)
+		return time.Time{}, fmt.Errorf("Unable to parse time %s in format %s: %v", b, TimeFormat, err)
 	}
 	return lastUpdated, nil
 }

@@ -205,7 +205,7 @@ func getInvoiceCreationMappings() (map[resourceType]mapping, error) {
 
 // create file if it does not exist or overwrite it completely
 func createOrReplaceMappingFile(newMapping mapping, resource resourceType, time time.Time) error {
-	newMapping["*-LastUpdated"] = time.Format(timeFormat)
+	newMapping["*-LastUpdated"] = time.Format(TimeFormat)
 	jsonBlob, err := json.MarshalIndent(newMapping, "", "  ")
 	if err != nil {
 		return fmt.Errorf("Unable to marshal json for resourceType %v: %v", resource, err)
@@ -228,7 +228,7 @@ func readLastUpdatedTime(resource resourceType) (time.Time, error) {
 	if !ok {
 		return time.Time{}, fmt.Errorf("*-LastUpdated tag not in file")
 	}
-	t, err := time.Parse(timeFormat, lastUpdated)
+	t, err := time.Parse(TimeFormat, lastUpdated)
 	if err != nil {
 		return time.Time{}, fmt.Errorf("Last updated time %s not formatted correctly: %v", lastUpdated, err)
 	}

@@ -52,7 +52,7 @@ func (r classResource) Since(t time.Time, p *Parameters) ([]Class, error) {
 	if p == nil {
 		p = NewParameters()
 	}
-	p.AddFilter("updatedTime", ">", t.Format(timeFormat))
+	p.AddFilter("updatedTime", ">", t.Format(TimeFormat))
 	classes, err := r.client.Class.All(p)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to get all Classs updated since %s: %v", t, err)

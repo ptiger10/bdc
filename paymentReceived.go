@@ -64,7 +64,7 @@ func (r paymentReceivedResource) Since(t time.Time, p *Parameters) ([]PaymentRec
 	if p == nil {
 		p = NewParameters()
 	}
-	p.AddFilter("updatedTime", ">", t.Format(timeFormat))
+	p.AddFilter("updatedTime", ">", t.Format(TimeFormat))
 	payments, err := r.client.PaymentReceived.All(p)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to get all payments received since %s: %v", t, err)
@@ -73,7 +73,7 @@ func (r paymentReceivedResource) Since(t time.Time, p *Parameters) ([]PaymentRec
 }
 
 // SinceFileTime returns all payments updated since the time stored in a text file, eg last_updated.txt.
-// File must store a single value formatted according to bdc.timeFormat string
+// File must store a single value formatted according to bdc.TimeFormat string
 // ie "2006-01-02T15:04:05.999-0700"
 // If no additional params to provide, must pass nil explicitly
 func (r paymentReceivedResource) SinceFileTime(filePath string, params *Parameters) ([]PaymentReceived, error) {

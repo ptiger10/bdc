@@ -52,7 +52,7 @@ func (r itemResource) Since(t time.Time, p *Parameters) ([]Item, error) {
 	if p == nil {
 		p = NewParameters()
 	}
-	p.AddFilter("updatedTime", ">", t.Format(timeFormat))
+	p.AddFilter("updatedTime", ">", t.Format(TimeFormat))
 	items, err := r.client.Item.All(p)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to get all Items updated since %s: %v", t, err)

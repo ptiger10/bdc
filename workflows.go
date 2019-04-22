@@ -26,7 +26,7 @@ const (
 
 // Call this only on bill.com-provided date strings that are definitely dates (eg invoice and due dates)
 func mustParseDate(date string) time.Time {
-	t, err := time.Parse(dateFormat, date)
+	t, err := time.Parse(DateFormat, date)
 	if err != nil {
 		log.Fatalf("Unable to parse date %s as date: %v", date, err)
 	}
@@ -44,8 +44,8 @@ func (c *Client) ModifyAllInvoiceDates(identifier string, inputType CustomerIden
 	for idx, invoice := range editableInvoices {
 		update := Invoice{
 			ID:          invoice.ID,
-			DueDate:     mustParseDate(invoice.DueDate).AddDate(0, 0, days).Format(dateFormat),
-			InvoiceDate: mustParseDate(invoice.InvoiceDate).AddDate(0, 0, days).Format(dateFormat),
+			DueDate:     mustParseDate(invoice.DueDate).AddDate(0, 0, days).Format(DateFormat),
+			InvoiceDate: mustParseDate(invoice.InvoiceDate).AddDate(0, 0, days).Format(DateFormat),
 		}
 		err := c.Invoice.Update(update)
 		if err != nil {
@@ -135,7 +135,7 @@ func (c *Client) StretchInvoiceSchedule(identifier string, inputType CustomerIde
 	additionalInvoices := newMonths - numInvoices
 
 	for i := 0; i < additionalInvoices; i++ {
-		newDate := mustParseDate(anchorInvoice.DueDate).AddDate(0, i+1, 0).Format(dateFormat) // add one month
+		newDate := mustParseDate(anchorInvoice.DueDate).AddDate(0, i+1, 0).Format(DateFormat) // add one month
 		newInvoice, err := NewInvoice(
 			"default",
 			anchorInvoice.CustomerID,

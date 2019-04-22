@@ -52,7 +52,7 @@ func (r locationResource) Since(t time.Time, p *Parameters) ([]Location, error) 
 	if p == nil {
 		p = NewParameters()
 	}
-	p.AddFilter("updatedTime", ">", t.Format(timeFormat))
+	p.AddFilter("updatedTime", ">", t.Format(TimeFormat))
 	locations, err := r.client.Location.All(p)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to get all Locations updated since %s: %v", t, err)

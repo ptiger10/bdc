@@ -52,7 +52,7 @@ func (r vendorResource) Since(t time.Time, p *Parameters) ([]Vendor, error) {
 	if p == nil {
 		p = NewParameters()
 	}
-	p.AddFilter("updatedTime", ">", t.Format(timeFormat))
+	p.AddFilter("updatedTime", ">", t.Format(TimeFormat))
 	vendors, err := r.client.Vendor.All(p)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to get all vendors updated since %s: %v", t, err)

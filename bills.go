@@ -64,7 +64,7 @@ func (r billResource) Since(t time.Time, p *Parameters) ([]Bill, error) {
 	if p == nil {
 		p = NewParameters()
 	}
-	p.AddFilter("updatedTime", ">", t.Format(timeFormat))
+	p.AddFilter("updatedTime", ">", t.Format(TimeFormat))
 	bills, err := r.client.Bill.All(p)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to get all Bills updated since %s: %v", t, err)
