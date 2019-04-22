@@ -6,13 +6,13 @@ import (
 )
 
 // CustomerIdentifier is a way that a client can identify a customer
-type CustomerIdentifier int
+type CustomerIdentifier string
 
 // Idenfier options
 const (
-	ID CustomerIdentifier = iota
-	Name
-	AccountNumber
+	ID            CustomerIdentifier = "id"
+	Name                             = "name"
+	AccountNumber                    = "account"
 )
 
 // ModifyAllInvoiceDates amends all of a customer's active invoices with invoice dates after today's date
