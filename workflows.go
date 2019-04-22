@@ -5,11 +5,12 @@ import (
 	"time"
 )
 
-type customerIdentifier int
+// CustomerIdentifier is a way that a client can identify a customer
+type CustomerIdentifier int
 
 // Idenfier options
 const (
-	ID customerIdentifier = iota
+	ID CustomerIdentifier = iota
 	Name
 	AccountNumber
 )
@@ -24,7 +25,7 @@ const (
 // ID is safest but least convenient.
 // AccountNumber can be convenient, but multiple people can have same account number.
 // Use the form that suits your workflow
-func (c *Client) ModifyAllInvoiceDates(identifier string, inputType customerIdentifier, days int) error {
+func (c *Client) ModifyAllInvoiceDates(identifier string, inputType CustomerIdentifier, days int) error {
 	invoices, err := c.getInvoicesByCustomer(identifier, inputType)
 	now := time.Now()
 	if err != nil {
@@ -57,17 +58,7 @@ func (c *Client) ModifyAllInvoiceDates(identifier string, inputType customerIden
 	return nil
 }
 
-// DelayInvoicesOneMonth is a convenience method for pushing back all
-// active invoices by 30 days
-func (c *Client) DelayInvoicesOneMonth(identifier string, inputType customerIdentifier) error {
-	err := c.ModifyAllInvoiceDates(identifier, inputType, 30)
-	if err != nil {
-		return fmt.Errorf("Unable to delay invoices one month: %v", err)
-	}
-	return err
-}
-
-func (c *Client) getInvoicesByCustomer(identifier string, inputType customerIdentifier) ([]Invoice, error) {
+func (c *Client) getInvoicesByCustomer(identifier string, inputType CustomerIdentifier) ([]Invoice, error) {
 	custID, err := c.identifyCustomer(identifier, inputType)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to get invoices for customer %v: bad identification: %v", identifier, err)
@@ -84,7 +75,7 @@ func (c *Client) getInvoicesByCustomer(identifier string, inputType customerIden
 // convert user-supplied identifier to bill.com ID using different strategies
 // if user has supplied a custom inputType (Name, AccountNumber), update that mapping first
 // to reduce likelihood of error
-func (c *Client) identifyCustomer(identifier string, inputType customerIdentifier) (string, error) {
+func (c *Client) identifyCustomer(identifier string, inputType CustomerIdentifier) (string, error) {
 	var cID string
 	var err error
 	var ok bool
