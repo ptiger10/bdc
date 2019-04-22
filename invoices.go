@@ -174,7 +174,7 @@ func NewInvoiceLineItem(itemName string, amount float64, description string) (*I
 	}
 	item, ok := maps[itemName]
 	if !ok {
-		return nil, fmt.Errorf("Item %v not in mapping. Check file in %v for valid mappings line item and run client.UpdateAllMappingFiles if necessary", itemName, mappingsDir)
+		return nil, fmt.Errorf("Item %v not in mapping. Check file in %v for valid mappings line item and run client.UpdateAllMappingFiles if necessary", itemName, MappingsDir)
 	}
 	return &InvoiceLineItem{
 		Entity:      "InvoiceLineItem",
@@ -198,15 +198,15 @@ func NewInvoice(customerName string, invoiceNumber string, dueDate string, class
 	}
 	location, ok := maps[Locations][locationName]
 	if !ok {
-		return Invoice{}, fmt.Errorf("Location %v not in mapping. Check file in %v for valid mappings and run client.UpdateAllMappingFiles if necessary", locationName, mappingsDir)
+		return Invoice{}, fmt.Errorf("Location %v not in mapping. Check file in %v for valid mappings and run client.UpdateAllMappingFiles if necessary", locationName, MappingsDir)
 	}
 	class, ok := maps[Classes][className]
 	if !ok {
-		return Invoice{}, fmt.Errorf("Class %v not in mapping. Check file in %v for valid mappings and run client.UpdateAllMappingFiles if necessary", className, mappingsDir)
+		return Invoice{}, fmt.Errorf("Class %v not in mapping. Check file in %v for valid mappings and run client.UpdateAllMappingFiles if necessary", className, MappingsDir)
 	}
 	customer, ok := maps[Customers][customerName]
 	if !ok {
-		return Invoice{}, fmt.Errorf("Customer %v not in mapping. Check file in %v for valid mappings and run client.UpdateAllMappingFiles if necessary", customerName, mappingsDir)
+		return Invoice{}, fmt.Errorf("Customer %v not in mapping. Check file in %v for valid mappings and run client.UpdateAllMappingFiles if necessary", customerName, MappingsDir)
 	}
 
 	var amount float64
