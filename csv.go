@@ -68,20 +68,20 @@ func (c *Client) CreateInvoicesFromCSV(path string) error {
 		dueDate := firstRow[2]
 		class := firstRow[3]
 		location := firstRow[4]
-		var invoiceLineItems []*InvoiceLineItem
+		var invoiceLineItems []InvoiceLineItem
 		for line := invoiceStartLine; line < invoiceStartLine+linesInInvoice[idx]; line++ {
 			row := records[line]
 			item := row[5]
 			amount, err := strconv.ParseFloat(row[6], 8)
 
 			description := row[7]
-			li, err := NewInvoiceLineItem(item, amount, description)
+			li, err := NewInvoiceLineItem("custom", item, amount, description)
 			if err != nil {
 				return fmt.Errorf("Error creating invoice line item on row %v: %v", line, err)
 			}
 			invoiceLineItems = append(invoiceLineItems, li)
 		}
-		invoice, err := NewInvoice(customer, invoiceNumber, dueDate, class, location, invoiceLineItems)
+		invoice, err := NewInvoice("custom", customer, invoiceNumber, dueDate, class, location, invoiceLineItems)
 		if err != nil {
 			return fmt.Errorf("Error creating invoice that starts on line %v: %v", invoiceStartLine, err)
 		}

@@ -3,7 +3,6 @@ package bdc
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"reflect"
 	"time"
 )
@@ -88,12 +87,12 @@ func (r invoiceResource) Get(id string) (Invoice, error) {
 
 // Create invoice
 func (r invoiceResource) Create(inv Invoice) error {
-
-	err := r.client.createEntity(r.suffix, inv)
-	if err == nil {
-		log.Printf("Created Invoice %+v\n", inv)
+	conf, err := r.client.createEntity(r.suffix, inv)
+	if err != nil {
+		return fmt.Errorf("Unable to create invoice %s for customer %s in amount %.2f: %v", inv.ID, inv.CustomerID, inv.Amount, err)
 	}
-	return err
+	writeToArchive(fmt.Sprintf("Created invoice: %s", conf))
+	return nil
 }
 
 // Since returns all invoices updated since the time provided.
@@ -138,7 +137,7 @@ func (r invoiceResource) Update(updates Invoice) error {
 		return fmt.Errorf("Unable to get invoice %v to run update: %v", updates.ID, err)
 	}
 	newInvoice := Invoice(oldInvoice)
-
+	nonZeroUpdates := make(map[string]interface{})
 	valUpdates := reflect.ValueOf(updates)
 	for i := 0; i < valUpdates.NumField(); i++ {
 		fVal := valUpdates.Field(i)
@@ -147,7 +146,7 @@ func (r invoiceResource) Update(updates Invoice) error {
 
 		var isZero bool
 		switch fType.Kind() {
-		case reflect.Slice:
+		case reflect.Slice: // handle LineItems
 			isZero = fVal.Len() == 0
 		default:
 			isZero = fVal.Interface() == reflect.Zero(fType).Interface()
@@ -155,31 +154,41 @@ func (r invoiceResource) Update(updates Invoice) error {
 		if isZero {
 			continue
 		}
-
+		nonZeroUpdates[fName] = fVal
 		reflect.ValueOf(&newInvoice).Elem().FieldByName(fName).Set(fVal)
 	}
-	err = r.client.updateEntity(r.suffix, newInvoice)
-	if err == nil {
-		log.Printf("Updated Invoice %s with %+v\n", updates.ID, updates)
+
+	conf, err := r.client.updateEntity(r.suffix, newInvoice)
+	if err != nil {
+		return fmt.Errorf("Unable to make these invoice changes: %v: %v", nonZeroUpdates, err)
 	}
-	return err
+	writeToArchive(fmt.Sprintf("Made these updates: %v. Full invoice: %s", nonZeroUpdates, conf))
+	return nil
+
 }
 
 // NewInvoiceLineItem returns a pointer to a new invoice line item
 // Only allows for a quantity of 1 per invoice line item
-func NewInvoiceLineItem(itemName string, amount float64, description string) (*InvoiceLineItem, error) {
-	maps, err := getItemsMapping()
-	if err != nil {
-		return nil, fmt.Errorf("Unable to get items mapping: %v", err)
+// identifierTypes must be one of: default (i.e., Bill.com-provided values), custom (client-provided values)
+func NewInvoiceLineItem(identifierTypes string, itemName string, amount float64, description string) (InvoiceLineItem, error) {
+	var item string
+	switch identifierTypes {
+	case "custom":
+		maps, err := getItemsMapping()
+		var ok bool
+		if err != nil {
+			return InvoiceLineItem{}, fmt.Errorf("Unable to get items mapping: %v", err)
+		}
+		item, ok = maps[itemName]
+		if !ok {
+			return InvoiceLineItem{}, fmt.Errorf("Item %v not in mapping. Check file in %v for valid mappings line item and run client.UpdateAllMappingFiles if necessary", itemName, MappingsDir)
+		}
+	case "default":
+		item = itemName
 	}
-	item, ok := maps[itemName]
-	if !ok {
-		return nil, fmt.Errorf("Item %v not in mapping. Check file in %v for valid mappings line item and run client.UpdateAllMappingFiles if necessary", itemName, MappingsDir)
-	}
-	return &InvoiceLineItem{
+	return InvoiceLineItem{
 		Entity:      "InvoiceLineItem",
 		ItemID:      item,
-		Amount:      amount,
 		Quantity:    1,
 		Price:       amount,
 		Description: description,
@@ -189,24 +198,34 @@ func NewInvoiceLineItem(itemName string, amount float64, description string) (*I
 // NewInvoice returns a new invoice
 // Date must be provided as YYYY-MM-DD
 // InvoiceDate and DueDate are set to be equivalent
+// identifierTypes must be one of: default (i.e., Bill.com-provided values), custom (client-provided values)
 // Best practice is to run c.UpdateInvoiceMappings() prior
-func NewInvoice(customerName string, invoiceNumber string, dueDate string, className string, locationName string,
-	lineItems []*InvoiceLineItem) (Invoice, error) {
-	maps, err := getInvoiceCreationMappings()
-	if err != nil {
-		return Invoice{}, fmt.Errorf("Unable to get convenience mappings to create invoice: %v", err)
-	}
-	location, ok := maps[Locations][locationName]
-	if !ok {
-		return Invoice{}, fmt.Errorf("Location %v not in mapping. Check file in %v for valid mappings and run client.UpdateAllMappingFiles if necessary", locationName, MappingsDir)
-	}
-	class, ok := maps[Classes][className]
-	if !ok {
-		return Invoice{}, fmt.Errorf("Class %v not in mapping. Check file in %v for valid mappings and run client.UpdateAllMappingFiles if necessary", className, MappingsDir)
-	}
-	customer, ok := maps[Customers][customerName]
-	if !ok {
-		return Invoice{}, fmt.Errorf("Customer %v not in mapping. Check file in %v for valid mappings and run client.UpdateAllMappingFiles if necessary", customerName, MappingsDir)
+func NewInvoice(identifierTypes string, customerName string, invoiceNumber string, dueDate string, className string, locationName string,
+	lineItems []InvoiceLineItem) (Invoice, error) {
+	var location, class, customer string
+	switch identifierTypes {
+	case "custom":
+		maps, err := getInvoiceCreationMappings()
+		var ok bool
+		if err != nil {
+			return Invoice{}, fmt.Errorf("Unable to get convenience mappings to create invoice: %v", err)
+		}
+		location, ok = maps[Locations][locationName]
+		if !ok {
+			return Invoice{}, fmt.Errorf("Location %v not in mapping. Check file in %v for valid mappings and run client.UpdateAllMappingFiles if necessary", locationName, MappingsDir)
+		}
+		class, ok = maps[Classes][className]
+		if !ok {
+			return Invoice{}, fmt.Errorf("Class %v not in mapping. Check file in %v for valid mappings and run client.UpdateAllMappingFiles if necessary", className, MappingsDir)
+		}
+		customer, ok = maps[Customers][customerName]
+		if !ok {
+			return Invoice{}, fmt.Errorf("Customer %v not in mapping. Check file in %v for valid mappings and run client.UpdateAllMappingFiles if necessary", customerName, MappingsDir)
+		}
+	case "default":
+		location = locationName
+		class = className
+		customer = customerName
 	}
 
 	var amount float64
@@ -215,7 +234,7 @@ func NewInvoice(customerName string, invoiceNumber string, dueDate string, class
 		amount += lineItem.Amount
 		lineItem.LocationID = location
 		lineItem.ClassID = class
-		lineItemsCopy = append(lineItemsCopy, *lineItem) // dereference pointers individually
+		lineItemsCopy = append(lineItemsCopy, lineItem) // dereference pointers individually
 	}
 
 	return Invoice{

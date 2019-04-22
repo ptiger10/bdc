@@ -19,7 +19,7 @@ func handleError(r []byte, url string) error {
 	var badResp errorResponse
 	json.Unmarshal(r, &badResp)
 	if badResp.Status == 1 {
-		return fmt.Errorf("Unable to perform operation at %s.\nError code: %s\nMessage: %s",
+		return fmt.Errorf("Unable to perform operation at %s.\tError code: %s\tMessage: %s",
 			url, badResp.Data.Code, badResp.Data.Msg)
 	}
 	return nil
