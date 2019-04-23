@@ -41,6 +41,11 @@ func (c *Client) ModifyAllInvoiceDates(identifier string, inputType CustomerIden
 	if err != nil {
 		return fmt.Errorf("Unable to modify any invoice dates: %v", err)
 	}
+
+	if len(editableInvoices) == 0 {
+		return fmt.Errorf("Unable to delay invoice schedule: no editable invoices exist - maybe they are inactive or all in the past?")
+	}
+
 	for idx, invoice := range editableInvoices {
 		update := Invoice{
 			ID:          invoice.ID,
