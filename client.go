@@ -80,9 +80,9 @@ var client = new(Client)
 
 // GetClient returns an authenticated client. Will reuse the existing client if available.
 // Must provide the path to a JSON file containing complete Bill.com credentials.
-func GetClient(path string) (*Client, error) {
+func GetClient() (*Client, error) {
 	var creds credentials
-	sid, err := login(path, &creds)
+	sid, err := login(&creds)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to create new Client: %s", err)
 	}

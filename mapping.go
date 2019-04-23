@@ -26,9 +26,6 @@ const (
 
 type mapping map[string]string
 
-// MappingsDir is the directory containing all mappings
-const MappingsDir string = "bdc_mappings"
-
 var availableMappings = []resourceType{Locations, Classes, Customers, Vendors, Items, CustomerAccountsID, CustomerAccountsName}
 
 // FetchAllMappingFiles overwrites the map of {resourceID: value} stored in the bdc_mappings/{resource}.json files
@@ -39,7 +36,7 @@ var availableMappings = []resourceType{Locations, Classes, Customers, Vendors, I
 // Every map includes an entry  "*-LastUpdated" with a timestamp of the last time the file was updated
 func (c *Client) FetchAllMappingFiles() error {
 	log.Printf("Fetching all mapping files and writing to %s/ folder.\nThis may take several moments...",
-		MappingsDir)
+		mappingsDir)
 	for _, resource := range availableMappings {
 		err := c.FetchMappingFile(resource)
 		if err != nil {
@@ -74,8 +71,8 @@ func (c *Client) FetchMappingFile(resource resourceType) error {
 		mInverted[v] = k
 	}
 
-	if _, err := os.Stat(MappingsDir); os.IsNotExist(err) {
-		os.Mkdir(MappingsDir, os.ModePerm)
+	if _, err := os.Stat(mappingsDir); os.IsNotExist(err) {
+		os.Mkdir(mappingsDir, os.ModePerm)
 	}
 
 	err = createOrReplaceMappingFile(mInverted, resource, now)
@@ -166,7 +163,7 @@ func (c *Client) fetchMap(resource resourceType, t time.Time, p *Parameters) (ma
 func getMapping(resource resourceType) (mapping, error) {
 	var m mapping
 
-	fPath := path.Join(MappingsDir, string(resource)+".json")
+	fPath := path.Join(mappingsDir, string(resource)+".json")
 	b, err := ioutil.ReadFile(fPath)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to read file %v: %v. Have you run client.FetchAllMappingFiles() yet?", fPath, err)
@@ -211,7 +208,7 @@ func createOrReplaceMappingFile(newMapping mapping, resource resourceType, time 
 		return fmt.Errorf("Unable to marshal json for resourceType %v: %v", resource, err)
 	}
 
-	filePath := path.Join(MappingsDir, string(resource)+".json")
+	filePath := path.Join(mappingsDir, string(resource)+".json")
 	err = ioutil.WriteFile(filePath, jsonBlob, 0666)
 	if err != nil {
 		return fmt.Errorf("Unable to write file for resourceType %v at %v: %v", resource, filePath, err)

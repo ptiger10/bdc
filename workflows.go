@@ -61,7 +61,7 @@ func (c *Client) ModifyAllInvoiceDates(identifier string, inputType CustomerIden
 			return fmt.Errorf("Unable to modify additional invoices: %v", err)
 		}
 	}
-	err = writeToArchive(fmt.Sprintf("Modified all future invoices for customer %v %s by %d days", inputType, identifier, days))
+	err = writeToHistory(fmt.Sprintf("Modified all future invoices for customer %v %s by %d days", inputType, identifier, days))
 	if err != nil {
 		return err
 	}
@@ -162,7 +162,7 @@ func (c *Client) StretchInvoiceSchedule(identifier string, inputType CustomerIde
 			return fmt.Errorf("Unable to stretch invoice schedule: unable to create additional new invoices: %v", err)
 		}
 	}
-	err = writeToArchive(fmt.Sprintf("Stretched invoice schedule for customer %v %s to %d months", inputType, identifier, newMonths))
+	err = writeToHistory(fmt.Sprintf("Stretched invoice schedule for customer %v %s to %d months", inputType, identifier, newMonths))
 	if err != nil {
 		return err
 	}

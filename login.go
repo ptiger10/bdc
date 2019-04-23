@@ -16,11 +16,11 @@ type loginResponse struct {
 }
 
 // login returns a session id if successful
-func login(path string, creds *credentials) (string, error) {
+func login(creds *credentials) (string, error) {
 	// Credentials
-	f, err := ioutil.ReadFile(path)
+	f, err := ioutil.ReadFile(credentialsPath)
 	if err != nil {
-		return "", fmt.Errorf("Unable to read credentials file at %s: %s", path, err)
+		return "", fmt.Errorf("Unable to read credentials file at %s: %s", credentialsPath, err)
 	}
 	json.Unmarshal(f, creds)
 	data := url.Values{}

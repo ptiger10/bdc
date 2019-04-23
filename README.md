@@ -11,11 +11,11 @@ To make queries to the Bill.com API you must first have an account (username + p
 
 Include your credentials in a json file in the same format as `credentials_example.json`. Now you can create a Client with:
 
-`c, err := bdc.GetClient("credentials.json")`
+`c, err := bdc.GetClient()`
 
 ## Get all records
 ```
-c, _ := bdc.GetClient("credentials.json")
+c, _ := bdc.GetClient()
 c.Invoice.All()
 ```
 
