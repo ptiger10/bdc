@@ -48,7 +48,7 @@ func (c *Client) CreateInvoicesFromCSV(path string) error {
 
 	// If nRows = 5, invoices starting on lines [1, 3, 5]
 	// would have line counts [2, 2, 1]
-	linesInInvoice := make([]int, 0)
+	linesInInvoice := make([]int, len(invoiceStartLines))
 	if len(invoiceStartLines) == 0 {
 		return fmt.Errorf("No invoices to write")
 	}
