@@ -48,9 +48,8 @@ func (c *Client) ModifyAllInvoiceDates(identifier string, inputType CustomerIden
 
 	for idx, invoice := range editableInvoices {
 		update := Invoice{
-			ID:          invoice.ID,
-			DueDate:     mustParseDate(invoice.DueDate).AddDate(0, 0, days).Format(DateFormat),
-			InvoiceDate: mustParseDate(invoice.InvoiceDate).AddDate(0, 0, days).Format(DateFormat),
+			ID:      invoice.ID,
+			DueDate: mustParseDate(invoice.DueDate).AddDate(0, 0, days).Format(DateFormat),
 		}
 		err := c.Invoice.Update(update)
 		if err != nil {
