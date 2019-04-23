@@ -20,7 +20,7 @@ func login(creds *credentials) (string, error) {
 	// Credentials
 	f, err := ioutil.ReadFile(credentialsPath)
 	if err != nil {
-		return "", fmt.Errorf("Unable to read credentials file at %s: %s", credentialsPath, err)
+		return "", fmt.Errorf("Unable to read credentials file (%q) specified in config file (%q): %s", credentialsPath, configDefault, err)
 	}
 	json.Unmarshal(f, creds)
 	data := url.Values{}
