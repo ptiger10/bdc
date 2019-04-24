@@ -251,6 +251,7 @@ func updateMappingFile(updatedMapping mapping, resource resourceType, timestamp 
 	return nil
 }
 
+// Set as short name due to too many duplicate class names
 func (c *Client) locationMap(t time.Time, p *Parameters) (mapping, error) {
 	m := make(mapping)
 	resp, err := c.Location.Since(t, p)
@@ -258,11 +259,12 @@ func (c *Client) locationMap(t time.Time, p *Parameters) (mapping, error) {
 		return nil, fmt.Errorf("Unable to get locations for mapping: %v", err)
 	}
 	for _, item := range resp {
-		m[item.ID] = item.Name
+		m[item.ID] = item.ShortName
 	}
 	return m, nil
 }
 
+// Set as short name due to too many duplicate class names
 func (c *Client) classMap(t time.Time, p *Parameters) (mapping, error) {
 	m := make(mapping)
 	resp, err := c.Class.Since(t, p)
@@ -270,7 +272,7 @@ func (c *Client) classMap(t time.Time, p *Parameters) (mapping, error) {
 		return nil, fmt.Errorf("Unable to get classes for mapping: %v", err)
 	}
 	for _, item := range resp {
-		m[item.ID] = item.Name
+		m[item.ID] = item.ShortName
 	}
 	return m, nil
 }
