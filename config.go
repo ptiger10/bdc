@@ -15,7 +15,6 @@ var (
 	credentialsDefault               = "./bdc_credentials.json"
 	mappingsDefault                  = "./bdc_mappings"
 	historyDefault                   = "./bdc_history.txt"
-	lastUpdatedDefault               = "./.bdc_last_updated.txt"
 	showHistoryDefault               = true
 )
 
@@ -23,11 +22,10 @@ const (
 	credentialsFile      pathKey = "bdc_credentialsFile"
 	mappingsDirectory            = "bdc_mappingsDir"
 	historyFile                  = "bdc_historyFile"
-	lastUpdatedFile              = "bdc_lastUpdatedFile"
 	showHistorySelection         = "bdc_showHistory"
 )
 
-var credentialsPath, mappingsDir, historyPath, lastUpdatedPath string
+var credentialsPath, mappingsDir, historyPath string
 var showHistory bool
 
 func init() {
@@ -37,7 +35,6 @@ func init() {
 			credentialsFile:      credentialsDefault,
 			mappingsDirectory:    mappingsDefault,
 			historyFile:          historyDefault,
-			lastUpdatedFile:      lastUpdatedDefault,
 			showHistorySelection: showHistoryDefault,
 		}
 		b, _ := json.MarshalIndent(defaultMap, "", "    ")
@@ -62,10 +59,6 @@ func init() {
 	historyPath, ok = configVars[historyFile].(string)
 	if !ok {
 		log.Fatalf("Value for %q in config file (%q) must be type string", historyFile, configDefault)
-	}
-	lastUpdatedPath, ok = configVars[lastUpdatedFile].(string)
-	if !ok {
-		log.Fatalf("Value for %q in config file (%q) must be type string", lastUpdatedFile, configDefault)
 	}
 	showHistory, ok = configVars[showHistorySelection].(bool)
 	if !ok {
