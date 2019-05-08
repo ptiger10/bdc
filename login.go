@@ -15,14 +15,30 @@ type loginResponse struct {
 	} `json:"response_data"`
 }
 
+var customCreds = &credentials{}
+
+// Login is an alternative way to authorize a client without supplying a credentials file.
+func Login(username, password, orgID, devKey string) {
+	customCreds = &credentials{
+		UserName: username,
+		Password: password,
+		OrgID:    orgID,
+		DevKey:   devKey,
+	}
+}
+
 // login returns a session id if successful
 func login(creds *credentials) (string, error) {
 	// Credentials
-	f, err := ioutil.ReadFile(credentialsPath)
-	if err != nil {
-		return "", fmt.Errorf("Unable to read credentials file (%q) specified in config file (%q): %s", credentialsPath, configPath, err)
+	if customCreds.UserName == "" {
+		f, err := ioutil.ReadFile(credentialsPath)
+		if err != nil {
+			return "", fmt.Errorf("Unable to read credentials file (%q) specified in config file (%q): %s", credentialsPath, configPath, err)
+		}
+		json.Unmarshal(f, creds)
+	} else {
+		creds = customCreds
 	}
-	json.Unmarshal(f, creds)
 	data := url.Values{}
 	data.Set("userName", creds.UserName)
 	data.Set("password", creds.Password)
@@ -43,7 +59,7 @@ func login(creds *credentials) (string, error) {
 	// Handling responses
 	err = handleError(r, loginURL)
 	if err != nil {
-		return "", fmt.Errorf("Unable to log in to Bill.com")
+		return "", fmt.Errorf("Unable to log in to Bill.com: %v", err)
 	}
 	var goodResp loginResponse
 	json.Unmarshal(r, &goodResp)
