@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 var configPath = "./.bdc_config.json"
@@ -55,18 +56,25 @@ func loadConfig() {
 		log.Fatalf("%v file must have valid JSON: %v", configPath, err)
 	}
 	var ok bool
+	configDir := filepath.Dir(configPath)
 	credentialsPath, ok = configVars[credentialsFile].(string)
 	if !ok {
 		log.Fatalf("Value for %q in config file (%q) must be type string", credentialsFile, configPath)
 	}
+	credentialsPath = filepath.Join(configDir, credentialsPath)
+
 	mappingsDir, ok = configVars[mappingsDirectory].(string)
 	if !ok {
 		log.Fatalf("Value for %q in config file (%q) must be type string", mappingsDirectory, configPath)
 	}
+	mappingsDir = filepath.Join(configDir, mappingsDir)
+
 	historyPath, ok = configVars[historyFile].(string)
 	if !ok {
 		log.Fatalf("Value for %q in config file (%q) must be type string", historyFile, configPath)
 	}
+	historyPath = filepath.Join(configDir, historyPath)
+
 	showHistory, ok = configVars[showHistorySelection].(bool)
 	if !ok {
 		log.Fatalf("Value for %q in config file (%q) must be type bool", showHistorySelection, configPath)
