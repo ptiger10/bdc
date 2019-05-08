@@ -81,6 +81,7 @@ var client = new(Client)
 // GetClient returns an authenticated client. Will reuse the existing client if available.
 // Must provide the path to a JSON file containing complete Bill.com credentials.
 func GetClient() (*Client, error) {
+	loadConfig()
 	var creds credentials
 	sid, err := login(&creds)
 	if err != nil {

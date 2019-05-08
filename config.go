@@ -7,12 +7,13 @@ import (
 	"os"
 )
 
+var configPath = "./.bdc_config.json"
+
 type defaultConfig interface{}
 type pathKey string
 
 var (
-	configDefault      defaultConfig = "./.bdc_config.json"
-	credentialsDefault               = "./bdc_credentials.json"
+	credentialsDefault defaultConfig = "./bdc_credentials.json"
 	mappingsDefault                  = "./bdc_mappings"
 	historyDefault                   = "./bdc_history.txt"
 	showHistoryDefault               = true
@@ -28,9 +29,15 @@ const (
 var credentialsPath, mappingsDir, historyPath string
 var showHistory bool
 
-func init() {
-	configDefault := configDefault.(string)
-	if _, err := os.Stat(configDefault); os.IsNotExist(err) {
+// SpecifyConfig sets a custom path to the bdc_config.json file
+// and overrides "./.bdc_config.json"
+func SpecifyConfig(path string) {
+	configPath = path
+}
+
+// Runs whenever a Client is created
+func loadConfig() {
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		defaultMap := map[pathKey]defaultConfig{
 			credentialsFile:      credentialsDefault,
 			mappingsDirectory:    mappingsDefault,
@@ -38,31 +45,31 @@ func init() {
 			showHistorySelection: showHistoryDefault,
 		}
 		b, _ := json.MarshalIndent(defaultMap, "", "    ")
-		ioutil.WriteFile(configDefault, b, 0666)
+		ioutil.WriteFile(configPath, b, 0666)
 	}
 
-	b, _ := ioutil.ReadFile(configDefault)
+	b, _ := ioutil.ReadFile(configPath)
 	var configVars map[pathKey]interface{}
 	err := json.Unmarshal(b, &configVars)
 	if err != nil {
-		log.Fatalf("%v file must have valid JSON: %v", configDefault, err)
+		log.Fatalf("%v file must have valid JSON: %v", configPath, err)
 	}
 	var ok bool
 	credentialsPath, ok = configVars[credentialsFile].(string)
 	if !ok {
-		log.Fatalf("Value for %q in config file (%q) must be type string", credentialsFile, configDefault)
+		log.Fatalf("Value for %q in config file (%q) must be type string", credentialsFile, configPath)
 	}
 	mappingsDir, ok = configVars[mappingsDirectory].(string)
 	if !ok {
-		log.Fatalf("Value for %q in config file (%q) must be type string", mappingsDirectory, configDefault)
+		log.Fatalf("Value for %q in config file (%q) must be type string", mappingsDirectory, configPath)
 	}
 	historyPath, ok = configVars[historyFile].(string)
 	if !ok {
-		log.Fatalf("Value for %q in config file (%q) must be type string", historyFile, configDefault)
+		log.Fatalf("Value for %q in config file (%q) must be type string", historyFile, configPath)
 	}
 	showHistory, ok = configVars[showHistorySelection].(bool)
 	if !ok {
-		log.Fatalf("Value for %q in config file (%q) must be type bool", showHistorySelection, configDefault)
+		log.Fatalf("Value for %q in config file (%q) must be type bool", showHistorySelection, configPath)
 	}
 
 }
