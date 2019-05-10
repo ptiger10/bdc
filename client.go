@@ -78,9 +78,9 @@ const DateFormat = "2006-01-02"
 
 var client = new(Client)
 
-// GetClient returns an authenticated client. Will reuse the existing client if available.
+// NewClient returns an authenticated client. Will reuse the existing client if available.
 // Must provide the path to a JSON file containing complete Bill.com credentials.
-func GetClient() (*Client, error) {
+func NewClient() (*Client, error) {
 	loadConfig()
 	var creds credentials
 	sid, err := login(&creds)

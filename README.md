@@ -15,11 +15,11 @@ To make queries to the Bill.com API you must first have an account (username + p
 Include your credentials in a json file in the same format as `credentials_example.json`.
 By default, it should be named `bdc_credentials.json` though you can set your desired path in the config file (see below). Now you can create a Client with:
 
-`client, err := bdc.GetClient()`
+`client, err := bdc.NewClient()`
 
 ## Get all records
 ```
-client, err := bdc.GetClient()
+client, err := bdc.NewClient()
 if err != nil {
     log.Fatal(err)
 }
