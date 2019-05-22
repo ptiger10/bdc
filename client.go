@@ -38,6 +38,7 @@ type credentials struct {
 type Client struct {
 	sessionID       string
 	devKey          string
+	expiresAt       time.Time
 	Reports         reports
 	Customer        customerResource
 	Vendor          vendorResource
@@ -48,6 +49,13 @@ type Client struct {
 	Location        locationResource
 	Class           classResource
 	Item            itemResource
+}
+
+func (c Client) expired() bool {
+	if time.Now().After(c.expiresAt) {
+		return true
+	}
+	return false
 }
 
 type resultError struct {
@@ -78,17 +86,17 @@ const DateFormat = "2006-01-02"
 
 var client = new(Client)
 
-// NewClient returns an authenticated client. Will reuse the existing client if available.
+// NewClient returns an authenticated client. Will reuse the existing session ID if available and not expired.
 // Must provide the path to a JSON file containing complete Bill.com credentials.
 func NewClient() (*Client, error) {
 	loadConfig()
-	var creds credentials
-	sid, err := login(&creds)
-	if err != nil {
-		return nil, fmt.Errorf("Unable to create new Client: %s", err)
-	}
-	if client.sessionID == "" {
-		client = &Client{sessionID: sid, devKey: creds.DevKey}
+	if client.sessionID == "" || client.expired() {
+		var creds credentials
+		sid, err := login(&creds)
+		if err != nil {
+			return nil, fmt.Errorf("Unable to create new Client: %s", err)
+		}
+		client = &Client{sessionID: sid, devKey: creds.DevKey, expiresAt: time.Now().Add(5 * time.Minute)}
 	}
 
 	client.Reports = reports{client: client}

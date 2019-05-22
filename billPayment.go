@@ -13,8 +13,6 @@ type paymentMadeResponse struct {
 // PaymentMade in Bill.com
 type PaymentMade struct {
 	Entity        string  `json:"entity"`
-	CreatedTime   string  `json:"createdTime"`
-	UpdatedTime   string  `json:"updatedTime"`
 	ID            string  `json:"id"`
 	BillID        string  `json:"billId"`
 	Name          string  `json:"name"`
@@ -22,6 +20,8 @@ type PaymentMade struct {
 	Amount        float64 `json:"amount"`
 	Description   string  `json:"description"`
 	ProcessDate   string  `json:"processDate"`
+	CreatedTime   string  `json:"createdTime"`
+	UpdatedTime   string  `json:"updatedTime"`
 }
 
 type paymentMadeResource struct {

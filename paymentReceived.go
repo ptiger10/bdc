@@ -12,25 +12,32 @@ type paymentResponse struct {
 
 // PaymentReceived in Bill.com, associated with an invoice
 type PaymentReceived struct {
-	ID            string  `json:"id"`
-	CreatedTime   string  `json:"createdTime"`
-	UpdatedTime   string  `json:"updatedTime"`
+	Entity      string `json:"entity"`
+	ID          string `json:"id"`
+	CreatedTime string `json:"createdTime"`
+	UpdatedTime string `json:"updatedTime"`
+	CustomerID  string `json:"customerId"`
+	// 0. Paid; 1. Void; 2. Scheduled; 3. Canceled
+	Status             string `json:"status"`
+	PaymentDate        string `json:"paymentDate"`
+	DepositToAccountID string `json:"depositToAccountId"`
+	IsOnline           bool   `json:"isOnline"`
+	// 0. Cash; 1. Check; 2. CreditCard; 3. ACH; 4. PayPal; 5. Other
+	PaymentType   string  `json:"paymentType"`
 	Amount        float64 `json:"amount"`
-	ConvFeeAmount float64 `json:"convFeeAmount"`
-	Entity        string  `json:"entity"`
-	PaymentDate   string  `json:"paymentDate"`
-	IsActive      string  `json:"isActive"`
-	CustomerID    string  `json:"customerId"`
-	InvoiceNumber string  `json:"invoiceNumber"`
 	Description   string  `json:"description"`
+	RefNumber     string  `json:"refNumber"`
+	ConvFeeAmount float64 `json:"convFeeAmount"`
 	InvoicePays   []struct {
+		Entity      string  `json:"entity"`
 		ID          string  `json:"id"`
 		InvoiceID   string  `json:"invoiceId"`
 		Amount      float64 `json:"amount"`
-		Entity      string  `json:"entity"`
+		Description string  `json:"description"`
 		CreatedTime string  `json:"createdTime"`
 		UpdatedTime string  `json:"updatedTime"`
-		Description string  `json:"description"`
+		// 0. Paid; 1. Void; 2. Scheduled; 3. Canceled; 4. Initiated
+		Status string `json:"status"`
 	} `json:"invoicePays"`
 }
 

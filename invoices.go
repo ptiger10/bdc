@@ -19,23 +19,36 @@ type invoiceResp struct {
 
 // Invoice in Bill.com
 type Invoice struct {
-	ID            string            `json:"id"`
-	CreatedTime   string            `json:"createdTime"`
-	UpdatedTime   string            `json:"updatedTime"`
-	AmountDue     float64           `json:"amountDue"`
-	Amount        float64           `json:"amount"`
-	PaymentStatus string            `json:"paymentStatus"`
-	Entity        string            `json:"entity"`
-	IsActive      string            `json:"isActive"`
-	CustomerID    string            `json:"customerId"`
-	InvoiceNumber string            `json:"invoiceNumber"`
-	InvoiceDate   string            `json:"invoiceDate"`
-	DueDate       string            `json:"dueDate"`
-	Description   string            `json:"description"`
-	LocationID    string            `json:"locationId"`
-	ClassID       string            `json:"actgClassId"`
-	LineItems     []InvoiceLineItem `json:"invoiceLineItems"`
-	ToEmail       bool              `json:"isToBeEmailed"`
+	Entity string `json:"entity"`
+	ID     string `json:"id"`
+	// 1. Active; 2. Inactive
+	IsActive           string            `json:"isActive"`
+	CreatedTime        string            `json:"createdTime"`
+	UpdatedTime        string            `json:"updatedTime"`
+	CustomerID         string            `json:"customerId"`
+	InvoiceNumber      string            `json:"invoiceNumber"`
+	InvoiceDate        string            `json:"invoiceDate"`
+	DueDate            string            `json:"dueDate"`
+	GLPostingDate      string            `json:"glPostingDate"`
+	Amount             float64           `json:"amount"`
+	AmountDue          float64           `json:"amountDue"`
+	PaymentStatus      string            `json:"paymentStatus"`
+	Description        string            `json:"description"`
+	PONumber           string            `json:"poNumber"`
+	IsToBePrinted      bool              `json:"isToBePrinted"`
+	IsToBeEmailed      bool              `json:"isToBeEmailed"`
+	LastSentTime       string            `json:"lastSentTime"`
+	ItemSalesTax       string            `json:"itemSalesTax"`
+	SalesTaxPercentage int               `json:"salesTaxPercentage"`
+	SalesTaxTotal      float64           `json:"salesTaxTotal"`
+	Terms              string            `json:"terms"`
+	ShipDate           string            `json:"shipDate"`
+	ShipMethod         string            `json:"shipMethod"`
+	DepartmentID       string            `json:"departmentId"`
+	LocationID         string            `json:"locationId"`
+	ClassID            string            `json:"actgClassId"`
+	JobID              string            `json:"jobId"`
+	LineItems          []InvoiceLineItem `json:"invoiceLineItems"`
 }
 
 // InvoiceLineItem on a Bill.com invoice
@@ -247,7 +260,7 @@ func NewInvoice(identifierTypes string, customerName string, invoiceNumber strin
 		AmountDue:     amount, // upon invoice creation, equivalent to amount
 		ClassID:       class,
 		LocationID:    location,
-		ToEmail:       true,
+		IsToBeEmailed: true,
 
 		LineItems: lineItemsCopy,
 	}, nil
