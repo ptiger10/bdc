@@ -22,22 +22,22 @@ type Invoice struct {
 	Entity string `json:"entity"`
 	ID     string `json:"id"`
 	// 1. Active; 2. Inactive
-	IsActive           string            `json:"isActive"`
-	CreatedTime        string            `json:"createdTime"`
-	UpdatedTime        string            `json:"updatedTime"`
-	CustomerID         string            `json:"customerId"`
-	InvoiceNumber      string            `json:"invoiceNumber"`
-	InvoiceDate        string            `json:"invoiceDate"`
-	DueDate            string            `json:"dueDate"`
-	GLPostingDate      string            `json:"glPostingDate"`
-	Amount             float64           `json:"amount"`
-	AmountDue          float64           `json:"amountDue"`
-	PaymentStatus      string            `json:"paymentStatus"`
-	Description        string            `json:"description"`
-	PONumber           string            `json:"poNumber"`
-	IsToBePrinted      bool              `json:"isToBePrinted"`
-	IsToBeEmailed      bool              `json:"isToBeEmailed"`
-	LastSentTime       string            `json:"lastSentTime"`
+	IsActive      string  `json:"isActive"`
+	CreatedTime   string  `json:"createdTime"`
+	UpdatedTime   string  `json:"updatedTime"`
+	CustomerID    string  `json:"customerId"`
+	InvoiceNumber string  `json:"invoiceNumber"`
+	InvoiceDate   string  `json:"invoiceDate"`
+	DueDate       string  `json:"dueDate"`
+	GLPostingDate string  `json:"glPostingDate"`
+	Amount        float64 `json:"amount"`
+	AmountDue     float64 `json:"amountDue"`
+	PaymentStatus string  `json:"paymentStatus"`
+	Description   string  `json:"description"`
+	PONumber      string  `json:"poNumber"`
+	IsToBePrinted bool    `json:"isToBePrinted"`
+	IsToBeEmailed bool    `json:"isToBeEmailed"`
+	// LastSentTime       string            `json:"lastSentTime"`
 	ItemSalesTax       string            `json:"itemSalesTax"`
 	SalesTaxPercentage int               `json:"salesTaxPercentage"`
 	SalesTaxTotal      float64           `json:"salesTaxTotal"`
@@ -213,7 +213,7 @@ func NewInvoiceLineItem(identifierTypes string, itemName string, amount float64,
 // InvoiceDate and DueDate are set to be equivalent
 // identifierTypes must be one of: default (i.e., Bill.com-provided values), custom (client-provided values)
 // Best practice is to run c.UpdateInvoiceMappings() prior
-func NewInvoice(identifierTypes string, customerName string, invoiceNumber string, dueDate string, className string, locationName string,
+func NewInvoice(identifierTypes, customerName, invoiceNumber, dueDate, className, locationName string,
 	lineItems []InvoiceLineItem) (Invoice, error) {
 	var location, class, customer string
 	switch identifierTypes {

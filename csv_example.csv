@@ -1,5 +1,5 @@
 Customer,InvoiceNumber,DueDate,Class,Location,Item,Amount,Description
-John Doe,doe-123,2019-01-01,Industrials,San Francisco,Drywall,50.00,Drywall for construction
+John Doe,doe-123,2019-01-01,Industrials,SF,Drywall,50.00,Drywall for construction
 ,,,,,Anchor,70.00,Anchors for construction
 ,,,,,Bolts,90.00,Bolts for construction
-Jane Doe,doe-456,2019-01-01,Residential,New York,Plaster,100.00,Plaster sales
+Jane Doe,doe-456,2019-01-01,Residential,NY,Plaster,100.00,Plaster sales

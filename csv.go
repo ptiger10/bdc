@@ -15,12 +15,12 @@ func (c *Client) CreateInvoicesFromCSV(path string) error {
 
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		return fmt.Errorf("Unable to read file at %s: %s", path, err)
+		return fmt.Errorf("unable to read file at %s: %s", path, err)
 	}
 	reader := csv.NewReader(bytes.NewReader(data))
 	records, error := reader.ReadAll()
 	if error != nil {
-		return fmt.Errorf("Error parsing CSV at %s: %s", path, err)
+		return fmt.Errorf("error parsing CSV at %s: %s", path, err)
 	}
 
 	// Looks for an empty InvoiceNumber or a non-repeated invoice number to demarcate a new invoice
@@ -38,7 +38,7 @@ func (c *Client) CreateInvoicesFromCSV(path string) error {
 				nextRow := records[lineNum+1]
 				repeated = row[1] == nextRow[1]
 			}
-			header := row[1] == "InvoiceNumber"
+			header := row[1] == "invoiceNumber"
 			empty := row[1] == ""
 			if !header && !empty && !repeated {
 				invoiceStartLines = append(invoiceStartLines, lineNum)
@@ -46,11 +46,11 @@ func (c *Client) CreateInvoicesFromCSV(path string) error {
 		}
 	}
 
-	// If nRows = 5, invoices starting on lines [1, 3, 5]
-	// would have line counts [2, 2, 1]
+	// If nRows = 5 and invoiceStartLines = [1, 3, 5],
+	// then linesInInvoice would = [2, 2, 1]
 	linesInInvoice := make([]int, len(invoiceStartLines))
 	if len(invoiceStartLines) == 0 {
-		return fmt.Errorf("No invoices to write")
+		return fmt.Errorf("no invoices to write")
 	}
 	for idx := range invoiceStartLines {
 		if idx == len(invoiceStartLines)-1 {
@@ -77,17 +77,17 @@ func (c *Client) CreateInvoicesFromCSV(path string) error {
 			description := row[7]
 			li, err := NewInvoiceLineItem("custom", item, amount, description)
 			if err != nil {
-				return fmt.Errorf("Error creating invoice line item on row %v: %v", line, err)
+				return fmt.Errorf("error creating invoice line item on row %v: %v", line, err)
 			}
 			invoiceLineItems = append(invoiceLineItems, li)
 		}
 		invoice, err := NewInvoice("custom", customer, invoiceNumber, dueDate, class, location, invoiceLineItems)
 		if err != nil {
-			return fmt.Errorf("Error creating invoice that starts on line %v: %v", invoiceStartLine, err)
+			return fmt.Errorf("error creating invoice that starts on line %v: %v", invoiceStartLine, err)
 		}
 		err = c.Invoice.Create(invoice)
 		if err != nil {
-			return fmt.Errorf("Error sending invoice to Bill.com that starts on line %v: %v", invoiceStartLine, err)
+			return fmt.Errorf("error sending invoice to Bill.com that starts on line %v: %v", invoiceStartLine, err)
 		}
 
 	}
