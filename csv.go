@@ -38,7 +38,7 @@ func (c *Client) CreateInvoicesFromCSV(path string) error {
 				nextRow := records[lineNum+1]
 				repeated = row[1] == nextRow[1]
 			}
-			header := row[1] == "invoiceNumber"
+			header := row[1] == "InvoiceNumber"
 			empty := row[1] == ""
 			if !header && !empty && !repeated {
 				invoiceStartLines = append(invoiceStartLines, lineNum)
