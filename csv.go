@@ -22,6 +22,12 @@ func (c *Client) CreateInvoicesFromCSV(path string) error {
 	if error != nil {
 		return fmt.Errorf("error parsing CSV at %s: %s", path, err)
 	}
+	for i, record := range records {
+		amount := record[6]
+		if amount == "" {
+			records = records[:i]
+		}
+	}
 
 	// Looks for an empty InvoiceNumber or a non-repeated invoice number to demarcate a new invoice
 	var invoiceStartLines []int
