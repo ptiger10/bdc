@@ -26,6 +26,7 @@ func (c *Client) CreateInvoicesFromCSV(path string) error {
 		item := record[5]
 		if item == "" {
 			records = records[:i]
+			break
 		}
 	}
 
