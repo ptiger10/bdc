@@ -23,8 +23,8 @@ func (c *Client) CreateInvoicesFromCSV(path string) error {
 		return fmt.Errorf("error parsing CSV at %s: %s", path, err)
 	}
 	for i, record := range records {
-		amount := record[6]
-		if amount == "" {
+		item := record[5]
+		if item == "" {
 			records = records[:i]
 		}
 	}
