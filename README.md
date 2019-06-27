@@ -3,7 +3,7 @@
 
 # A concurrent Go client for the Bill.com API
 
-**NB: Still under active development. Use at your own risk**
+**June 2019 Update:** Use this package at your own risk. The functionality for reading and writing data is solid, but the internal unit tests are not nearly as robust as I would like for them to be. This is because Bill.com charges $1200/yr (!!!) for a developer to access a Sandbox account, even for testing. If you're looking for billing software with an accessible API, I would caution you to use a developer-friendly service like Stripe instead.
 
 ## Logging in to the Bill.com API v2
 To make queries to the Bill.com API you must first have an account (username + password), developer key, and organization ID. 
